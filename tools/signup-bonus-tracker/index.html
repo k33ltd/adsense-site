@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Sign-Up Bonus Tracker — track multiple credit card applications: spend requirements, deadlines, bonus posting dates. Never miss a bonus again.">
+  <title>Sign-Up Bonus Tracker | [SITE NAME]</title>
+  <link rel="canonical" href="https://YOUR-DOMAIN.com/tools/signup-bonus-tracker/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg: #ffffff; --fg: #111827; --muted: #6b7280;
+      --accent: #2563eb; --accent-hover: #1d4ed8; --success: #16a34a; --warn: #f59e0b; --error: #dc2626;
+      --border: #e5e7eb; --card: #f9fafb; --input-bg: #fff;
+      --max-w: 900px; --space: 1.5rem;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #0f172a; --fg: #f1f5f9; --muted: #94a3b8;
+        --accent: #3b82f6; --accent-hover: #60a5fa; --success: #22c55e; --warn: #fbbf24; --error: #ef4444;
+        --border: #1e293b; --card: #111827; --input-bg: #1e293b; }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', system-ui, sans-serif; line-height: 1.6; color: var(--fg); background: var(--bg); }
+    .wrap { max-width: var(--max-w); margin: 0 auto; padding: 0 var(--space); }
+    header { padding: 2rem 0 1.5rem; border-bottom: 1px solid var(--border); text-align: center; }
+    h1 { font-size: clamp(1.75rem, 4vw, 2.25rem); font-weight: 700; line-height: 1.2; margin-bottom: 0.5rem; }
+    .tagline { color: var(--muted); font-size: 1rem; max-width: 600px; margin: 0 auto; }
+    main { padding: 2rem 0; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .toolbar { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem; align-items: center; }
+    .btn { padding: 0.625rem 1rem; border: none; border-radius: 8px; font-family: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary { background: var(--border); color: var(--fg); }
+    .btn-secondary:hover { background: color-mix(in srgb, var(--border) 80%, transparent); }
+    .btn-danger { background: var(--error); color: white; }
+    .btn-danger:hover { background: #b91c1c; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+    .btn-ghost:hover { background: color-mix(in srgb, var(--accent) 10%, var(--bg)); }
+    .tracker-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; overflow-x: auto; display: block; }
+    .tracker-table th, .tracker-table td { padding: 0.625rem 0.75rem; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+    .tracker-table th { font-weight: 600; color: var(--fg); position: sticky; top: 0; background: var(--card); z-index: 1; white-space: nowrap; }
+    .tracker-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 3%, var(--bg)); }
+    .tracker-table .cell-card { font-weight: 600; min-width: 180px; }
+    .tracker-table .cell-bank { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; }
+    .tracker-table .cell-bonus { font-family: monospace; font-weight: 600; color: var(--accent); }
+    .tracker-table .cell-spend { font-family: monospace; }
+    .tracker-table .cell-date { white-space: nowrap; }
+    .tracker-table .cell-progress { min-width: 140px; }
+    .progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 3px; transition: width 0.3s, background 0.3s; }
+    .progress-fill.on-track { background: var(--success); }
+    .progress-fill.warning { background: var(--warn); }
+    .progress-fill.danger { background: var(--error); }
+    .progress-fill.complete { background: var(--success); }
+    .progress-text { font-size: 0.7rem; color: var(--muted); margin-top: 0.25rem; display: flex; justify-content: space-between; }
+    .status-badge { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.2rem 0.6rem; border-radius: 9999px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; }
+    .status-badge.tracking { background: color-mix(in srgb, var(--accent) 15%, var(--bg)); color: var(--accent); }
+    .status-badge.complete { background: color-mix(in srgb, var(--success) 15%, var(--bg)); color: var(--success); }
+    .status-badge.missed { background: color-mix(in srgb, var(--error) 15%, var(--bg)); color: var(--error); }
+    .status-badge.pending { background: color-mix(in srgb, var(--warn) 15%, var(--bg)); color: var(--warn); }
+    .inline-input { width: 100%; padding: 0.375rem 0.5rem; border: 1px solid var(--border); border-radius: 4px; font-family: inherit; font-size: 0.85rem; background: var(--input-bg); color: var(--fg); }
+    .inline-input:focus { outline: none; border-color: var(--accent); }
+    .inline-input.small { width: 70px; }
+    .inline-input.medium { width: 100px; }
+    .actions-cell { display: flex; gap: 0.25rem; }
+    .action-btn { padding: 0.25rem 0.5rem; border: none; border-radius: 4px; font-size: 0.7rem; cursor: pointer; background: var(--border); color: var(--fg); }
+    .action-btn:hover { background: var(--accent); color: white; }
+    .action-btn.delete { background: transparent; color: var(--error); }
+    .action-btn.delete:hover { background: color-mix(in srgb, var(--error) 10%, var(--bg)); }
+    .empty-state { text-align: center; padding: 3rem; color: var(--muted); }
+    .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
+    .summary-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+    @media (max-width: 600px) { .summary-bar { grid-template-columns: repeat(2, 1fr); } }
+    .summary-item { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; text-align: center; }
+    .summary-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; }
+    .summary-value { font-size: 1.75rem; font-weight: 700; color: var(--fg); }
+    .summary-item.success .summary-value { color: var(--success); }
+    .summary-item.warn .summary-value { color: var(--warn); }
+    .summary-item.error .summary-value { color: var(--error); }
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 100; opacity: 0; visibility: hidden; transition: opacity 0.2s, visibility 0.2s; }
+    .modal.open { opacity: 1; visibility: visible; }
+    .modal-content { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; transform: translateY(20px); transition: transform 0.2s; }
+    .modal.open .modal-content { transform: none; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .modal-title { font-size: 1.1rem; font-weight: 600; }
+    .modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--muted); line-height: 1; }
+    .modal-close:hover { color: var(--fg); }
+    .modal-field { margin-bottom: 1rem; }
+    .modal-field label { display: block; font-weight: 500; font-size: 0.85rem; margin-bottom: 0.375rem; }
+    .modal-field .input-row { display: grid; gap: 0.5rem; grid-template-columns: 1fr; }
+    @media (min-width: 400px) { .modal-field .input-row { grid-template-columns: 1fr 1fr; } }
+    .modal-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; }
+    .ad-slot { text-align: center; margin: 1.5rem 0; min-height: 90px; }
+    .ad-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; display: block; }
+    footer { padding: 2rem 0; border-top: 1px solid var(--border); text-align: center; color: var(--muted); font-size: 0.875rem; }
+    .nav { display: flex; justify-content: center; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
+    .nav a { padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 8px; font-weight: 500; font-size: 0.875rem; color: var(--fg); text-decoration: none; }
+    .nav a:hover { background: var(--card); }
+    .hidden { display: none !important; }
+    .help-text { font-size: 0.8rem; color: var(--muted); margin-top: 0.25rem; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Sign-Up Bonus Tracker</h1>
+      <p class="tagline">Track multiple applications: spend requirements, deadlines, bonus posting. Export to CSV. Data saved locally.</p>
+    </header>
+
+    <nav class="nav" aria-label="Site navigation">
+      <a href="/">Home</a>
+      <a href="/guides/">Guides</a>
+      <a href="/tools/">Tools</a>
+      <a href="/about/">About</a>
+    </nav>
+
+    <main>
+      <article class="card">
+        <div class="summary-bar" id="summary-bar">
+          <div class="summary-item"><div class="summary-label">Active Applications</div><div class="summary-value" id="count-active">0</div></div>
+          <div class="summary-item success"><div class="summary-label">Completed Bonuses</div><div class="summary-value" id="count-complete">0</div></div>
+          <div class="summary-item warn"><div class="summary-label">Total Bonus Value</div><div class="summary-value" id="total-bonus">$0</div></div>
+          <div class="summary-item error"><div class="summary-label">At Risk</div><div class="summary-value" id="count-risk">0</div></div>
+        </div>
+
+        <div class="toolbar">
+          <button class="btn btn-primary" id="add-application">+ Add Application</button>
+          <button class="btn btn-secondary" id="export-csv">Export CSV</button>
+          <button class="btn btn-ghost" id="import-csv-btn">Import CSV</button>
+          <input type="file" id="import-csv" accept=".csv" class="hidden" style="display:none;">
+          <span class="help-text" style="margin-left:auto;">Data saved in your browser (localStorage)</span>
+        </div>
+
+        <div class="tracker-table" role="table" aria-label="Application tracker">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:40px;">#</th>
+                <th class="cell-card">Card</th>
+                <th class="cell-bank">Bank</th>
+                <th class="cell-bonus">Bonus</th>
+                <th class="cell-spend">Spend Req</th>
+                <th class="cell-date">Applied</th>
+                <th class="cell-date">Deadline</th>
+                <th class="cell-progress">Progress</th>
+                <th class="cell-date">Bonus Posted</th>
+                <th>Status</th>
+                <th style="width:80px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tracker-body"></tbody>
+          </table>
+        </div>
+
+        <div id="empty-state" class="empty-state">
+          <div class="icon">📋</div>
+          <p>No applications tracked yet. Click <strong>+ Add Application</strong> to start.</p>
+          <p class="help-text">Tip: Add cards as soon as you apply. The tracker calculates daily spend pace and warns if you're off track.</p>
+        </div>
+      </article>
+
+      <!-- AD SLOT -->
+      <div class="ad-slot">
+        <span class="ad-label">Advertisement</span>
+        <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="YOUR_SLOT_TRACKER" data-ad-format="auto" data-full-width-responsive="true"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+      </div>
+
+      <article class="card">
+        <h2>How to Use</h2>
+        <ol style="margin-left: 1.25rem; margin-bottom: 1rem;">
+          <li><strong>Add each application</strong> when you submit — card, bank, bonus, spend requirement, deadline.</li>
+          <li><strong>Update spend monthly</strong> (or weekly) — the progress bar shows % complete and daily pace needed.</li>
+          <li><strong>Mark "Bonus Posted"</strong> when points hit your account — moves to Completed.</li>
+          <li><strong>Export CSV</strong> for backup or spreadsheet analysis.</li>
+        </ol>
+        <h3>Status Meanings</h3>
+        <ul style="margin-left: 1.25rem;">
+          <li><span class="status-badge tracking">Tracking</span> — Application submitted, working on spend</li>
+          <li><span class="status-badge pending">Pending</span> — Spend met, waiting for bonus to post</li>
+          <li><span class="status-badge complete">Complete</span> — Bonus received ✓</li>
+          <li><span class="status-badge missed">Missed</span> — Deadline passed without meeting spend</li>
+        </ul>
+        <h3>Pro Tips</h3>
+        <ul style="margin-left: 1.25rem;">
+          <li>Set deadline = approval date + months stated in terms (usually 3 months)</li>
+          <li>Green progress = on track. Yellow = need to accelerate. Red = at risk.</li>
+          <li>Use "Last 4 Digits" to distinguish multiple same-card applications</li>
+          <li>CSV export includes all fields for tax records or churning logs</li>
+        </ul>
+      </article>
+    </main>
+
+    <footer>
+      <p>&copy; 2024 [SITE NAME]. <a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a> · <a href="/contact/">Contact</a> · <a href="/disclaimer/">Advertiser Disclosure</a></p>
+      <p style="margin-top: 0.5rem;">This site uses Google AdSense. <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener">How Google uses data</a>.</p>
+    </footer>
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div class="modal" id="app-modal" role="dialog" aria-labelledby="modal-title" aria-modal="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-title">Add Application</h3>
+        <button class="modal-close" id="modal-close" aria-label="Close">&times;</button>
+      </div>
+      <form id="app-form" novalidate>
+        <input type="hidden" id="app-id">
+        <div class="modal-field">
+          <label>Card Name <span aria-hidden="true">*</span></label>
+          <input type="text" id="f-card" class="inline-input" required maxlength="60" placeholder="Chase Sapphire Preferred" autocomplete="off">
+        </div>
+        <div class="modal-field">
+          <label>Bank / Issuer <span aria-hidden="true">*</span></label>
+          <select id="f-bank" class="inline-input" required>
+            <option value="">Select...</option>
+            <option value="Chase">Chase</option>
+            <option value="American Express">American Express</option>
+            <option value="Capital One">Capital One</option>
+            <option value="Citi">Citi</option>
+            <option value="Bank of America">Bank of America</option>
+            <option value="Wells Fargo">Wells Fargo</option>
+            <option value="US Bank">US Bank</option>
+            <option value="Barclays">Barclays</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="modal-field">
+          <div class="input-row">
+            <div>
+              <label>Bonus Value <span aria-hidden="true">*</span></label>
+              <div style="display:flex; gap:0.5rem;">
+                <input type="number" id="f-bonus" class="inline-input small" required min="0" step="1000" placeholder="60000">
+                <select id="f-bonus-type" class="inline-input small" style="width:100px;">
+                  <option value="points">Points</option>
+                  <option value="miles">Miles</option>
+                  <option value="cash">Cash $</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label>Est. Cash Value $</label>
+              <input type="number" id="f-bonus-value" class="inline-input small" min="0" step="10" placeholder="750">
+            </div>
+          </div>
+        </div>
+        <div class="modal-field">
+          <div class="input-row">
+            <div>
+              <label>Spend Requirement $ <span aria-hidden="true">*</span></label>
+              <input type="number" id="f-spend-req" class="inline-input medium" required min="0" step="100" placeholder="4000">
+            </div>
+            <div>
+              <label>Spend Met $</label>
+              <input type="number" id="f-spend-met" class="inline-input medium" min="0" step="100" value="0" placeholder="0">
+            </div>
+          </div>
+        </div>
+        <div class="modal-field">
+          <div class="input-row">
+            <div>
+              <label>Application Date <span aria-hidden="true">*</span></label>
+              <input type="date" id="f-applied" class="inline-input" required>
+            </div>
+            <div>
+              <label>Deadline Date <span aria-hidden="true">*</span></label>
+              <input type="date" id="f-deadline" class="inline-input" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-field">
+          <div class="input-row">
+            <div>
+              <label>Bonus Posted Date</label>
+              <input type="date" id="f-posted" class="inline-input">
+            </div>
+            <div>
+              <label>Last 4 Digits</label>
+              <input type="text" id="f-last4" class="inline-input small" maxlength="4" pattern="\d{0,4}" placeholder="1234">
+            </div>
+          </div>
+        </div>
+        <div class="modal-field">
+          <label>Status</label>
+          <select id="f-status" class="inline-input">
+            <option value="tracking">Tracking</option>
+            <option value="pending">Pending Bonus</option>
+            <option value="complete">Complete</option>
+            <option value="missed">Missed</option>
+          </select>
+        </div>
+        <div class="modal-field">
+          <label>Notes</label>
+          <textarea id="f-notes" class="inline-input" rows="3" placeholder="Referral link used, targeted offer, etc."></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const STORAGE_KEY = 'sub_tracker_v1';
+      const body = document.getElementById('tracker-body');
+      const emptyState = document.getElementById('empty-state');
+      const modal = document.getElementById('app-modal');
+      const form = document.getElementById('app-form');
+      let apps = [];
+      let editingId = null;
+
+      // Load from localStorage
+      function load() {
+        try {
+          const data = localStorage.getItem(STORAGE_KEY);
+          apps = data ? JSON.parse(data) : [];
+        } catch { apps = []; }
+        render();
+      }
+
+      function save() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(apps));
+        render();
+      }
+
+      function fmtMoney(n) { return '$' + n.toLocaleString(); }
+      function fmtDate(d) { return d ? new Date(d).toLocaleDateString(undefined, {month:'short', day:'numeric', year:'numeric'}) : '—'; }
+      function daysBetween(start, end) { return Math.max(0, Math.ceil((new Date(end) - new Date(start)) / (1000*60*60*24))); }
+      function today() { return new Date().toISOString().split('T')[0]; }
+
+      function calcProgress(app) {
+        const spent = app.spendMet || 0;
+        const required = app.spendReq || 1;
+        const pct = Math.min(100, (spent / required) * 100);
+        const daysLeft = daysBetween(today(), app.deadline);
+        const totalDays = daysBetween(app.applied, app.deadline);
+        const daysElapsed = totalDays - daysLeft;
+        const dailyPace = daysLeft > 0 ? (required - spent) / daysLeft : 0;
+        const expectedPace = required / totalDays;
+        let status = 'on-track';
+        if (pct >= 100) status = 'complete';
+        else if (dailyPace > expectedPace * 1.5) status = 'danger';
+        else if (dailyPace > expectedPace * 1.1) status = 'warning';
+        return { pct, daysLeft, dailyPace: Math.max(0, dailyPace), status };
+      }
+
+      function render() {
+        const active = apps.filter(a => a.status !== 'complete' && a.status !== 'missed');
+        const complete = apps.filter(a => a.status === 'complete');
+        const risk = apps.filter(a => a.status === 'tracking' && calcProgress(a).status === 'danger');
+
+        document.getElementById('count-active').textContent = active.length;
+        document.getElementById('count-complete').textContent = complete.length;
+        document.getElementById('total-bonus').textContent = fmtMoney(complete.reduce((sum, a) => sum + (a.bonusValue || 0), 0));
+        document.getElementById('count-risk').textContent = risk.length;
+
+        if (apps.length === 0) {
+          body.innerHTML = '';
+          emptyState.classList.remove('hidden');
+          return;
+        }
+        emptyState.classList.add('hidden');
+
+        // Sort: tracking first (by deadline), then pending, then complete, then missed
+        const statusOrder = { tracking: 0, pending: 1, complete: 2, missed: 3 };
+        const sorted = [...apps].sort((a,b) => {
+          if (statusOrder[a.status] !== statusOrder[b.status]) return statusOrder[a.status] - statusOrder[b.status];
+          return new Date(a.deadline) - new Date(b.deadline);
+        });
+
+        body.innerHTML = sorted.map((app, idx) => {
+          const prog = calcProgress(app);
+          const statusLabels = { tracking: 'Tracking', pending: 'Pending', complete: 'Complete', missed: 'Missed' };
+          const bonusDisplay = app.bonusType === 'cash' ? fmtMoney(app.bonus) : app.bonus.toLocaleString() + ' ' + app.bonusType;
+          const last4 = app.last4 ? ` • ${app.last4}` : '';
+
+          return `
+            <tr data-id="${app.id}">
+              <td>${idx + 1}</td>
+              <td class="cell-card">${app.card}${last4}</td>
+              <td class="cell-bank">${app.bank}</td>
+              <td class="cell-bonus">${bonusDisplay}</td>
+              <td class="cell-spend">${fmtMoney(app.spendReq)}</td>
+              <td class="cell-date">${fmtDate(app.applied)}</td>
+              <td class="cell-date">${fmtDate(app.deadline)}</td>
+              <td class="cell-progress">
+                <div class="progress-bar"><div class="progress-fill ${prog.status}" style="width:${prog.pct}%"></div></div>
+                <div class="progress-text"><span>${prog.pct.toFixed(0)}%</span><span>${prog.daysLeft}d left • $${prog.dailyPace.toFixed(0)}/day</span></div>
+              </td>
+              <td class="cell-date">${fmtDate(app.bonusPosted)}</td>
+              <td><span class="status-badge ${app.status}">${statusLabels[app.status]}</span></td>
+              <td class="actions-cell">
+                <button class="action-btn edit-btn" data-id="${app.id}" aria-label="Edit">✎</button>
+                <button class="action-btn delete delete-btn" data-id="${app.id}" aria-label="Delete">🗑</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        // Bind edit/delete
+        body.querySelectorAll('.edit-btn').forEach(btn => btn.addEventListener('click', () => openModal(btn.dataset.id)));
+        body.querySelectorAll('.delete-btn').forEach(btn => btn.addEventListener('click', () => deleteApp(btn.dataset.id)));
+      }
+
+      function openModal(id = null) {
+        editingId = id;
+        const app = id ? apps.find(a => a.id === id) : null;
+        document.getElementById('modal-title').textContent = id ? 'Edit Application' : 'Add Application';
+        form.reset();
+        if (app) {
+          document.getElementById('app-id').value = app.id;
+          document.getElementById('f-card').value = app.card;
+          document.getElementById('f-bank').value = app.bank;
+          document.getElementById('f-bonus').value = app.bonus;
+          document.getElementById('f-bonus-type').value = app.bonusType;
+          document.getElementById('f-bonus-value').value = app.bonusValue || '';
+          document.getElementById('f-spend-req').value = app.spendReq;
+          document.getElementById('f-spend-met').value = app.spendMet;
+          document.getElementById('f-applied').value = app.applied;
+          document.getElementById('f-deadline').value = app.deadline;
+          document.getElementById('f-posted').value = app.bonusPosted || '';
+          document.getElementById('f-last4').value = app.last4 || '';
+          document.getElementById('f-status').value = app.status;
+          document.getElementById('f-notes').value = app.notes || '';
+        } else {
+          document.getElementById('f-applied').value = today();
+          // Default deadline: 3 months from today
+          const d = new Date(); d.setMonth(d.getMonth() + 3);
+          document.getElementById('f-deadline').value = d.toISOString().split('T')[0];
+        }
+        modal.classList.add('open');
+        document.getElementById('f-card').focus();
+      }
+
+      function closeModal() {
+        modal.classList.remove('open');
+        editingId = null;
+      }
+
+      function deleteApp(id) {
+        if (confirm('Delete this application?')) {
+          apps = apps.filter(a => a.id !== id);
+          save();
+        }
+      }
+
+      form.addEventListener('submit', e => {
+        e.preventDefault();
+        const id = document.getElementById('app-id').value || crypto.randomUUID();
+        const bonus = parseInt(document.getElementById('f-bonus').value) || 0;
+        const bonusValue = parseInt(document.getElementById('f-bonus-value').value) || (bonus * 0.01); // rough default
+        const app = {
+          id,
+          card: document.getElementById('f-card').value.trim(),
+          bank: document.getElementById('f-bank').value,
+          bonus,
+          bonusType: document.getElementById('f-bonus-type').value,
+          bonusValue,
+          spendReq: parseInt(document.getElementById('f-spend-req').value) || 0,
+          spendMet: parseInt(document.getElementById('f-spend-met').value) || 0,
+          applied: document.getElementById('f-applied').value,
+          deadline: document.getElementById('f-deadline').value,
+          bonusPosted: document.getElementById('f-posted').value || null,
+          last4: document.getElementById('f-last4').value.trim(),
+          status: document.getElementById('f-status').value,
+          notes: document.getElementById('f-notes').value.trim(),
+          createdAt: editingId ? apps.find(a => a.id === editingId)?.createdAt : new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+
+        if (editingId) {
+          apps = apps.map(a => a.id === editingId ? app : a);
+        } else {
+          apps.push(app);
+        }
+        save();
+        closeModal();
+      });
+
+      document.getElementById('modal-close').addEventListener('click', closeModal);
+      document.getElementById('modal-cancel').addEventListener('click', closeModal);
+      modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+
+      document.getElementById('add-application').addEventListener('click', () => openModal());
+
+      // Export CSV
+      document.getElementById('export-csv').addEventListener('click', () => {
+        if (apps.length === 0) return alert('No data to export');
+        const headers = ['ID','Card','Bank','Bonus','Bonus Type','Bonus Value $','Spend Required','Spend Met','Applied','Deadline','Bonus Posted','Last 4','Status','Notes','Created','Updated'];
+        const rows = apps.map(a => [
+          a.id, a.card, a.bank, a.bonus, a.bonusType, a.bonusValue, a.spendReq, a.spendMet,
+          a.applied, a.deadline, a.bonusPosted || '', a.last4, a.status, a.notes, a.createdAt, a.updatedAt
+        ]);
+        const csv = [headers, ...rows].map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = `bonus-tracker-${today()}.csv`; a.click();
+        URL.revokeObjectURL(url);
+      });
+
+      // Import CSV
+      document.getElementById('import-csv-btn').addEventListener('click', () => document.getElementById('import-csv').click());
+      document.getElementById('import-csv').addEventListener('change', e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = ev => {
+          try {
+            const text = ev.target.result;
+            const lines = text.trim().split('\n');
+            if (lines.length < 2) throw new Error('Empty CSV');
+            const imported = lines.slice(1).map(line => {
+              const vals = line.split(',').map(v => v.replace(/^"|"$/g, '').replace(/""/g, '"'));
+              return {
+                id: vals[0] || crypto.randomUUID(),
+                card: vals[1], bank: vals[2], bonus: parseInt(vals[3])||0, bonusType: vals[4],
+                bonusValue: parseInt(vals[5])||0, spendReq: parseInt(vals[6])||0, spendMet: parseInt(vals[7])||0,
+                applied: vals[8], deadline: vals[9], bonusPosted: vals[10] || null, last4: vals[11],
+                status: vals[12], notes: vals[13], createdAt: vals[14], updatedAt: new Date().toISOString()
+              };
+            });
+            apps = [...apps, ...imported];
+            save();
+            alert(`Imported ${imported.length} applications`);
+          } catch (err) { alert('Import failed: ' + err.message); }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+      });
+
+      // Initialize
+      load();
+    })();
+  </script>
+</body>
+</html>

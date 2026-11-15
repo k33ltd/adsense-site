@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Credit Card Payoff Calculator — see exactly when you'll be debt-free and how much interest you'll save with extra payments.">
+  <title>Credit Card Payoff Calculator | [SITE NAME]</title>
+  <link rel="canonical" href="https://YOUR-DOMAIN.com/tools/credit-card-payoff-calculator/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg: #ffffff; --fg: #111827; --muted: #6b7280;
+      --accent: #2563eb; --accent-hover: #1d4ed8; --success: #16a34a; --warn: #f59e0b; --error: #dc2626;
+      --border: #e5e7eb; --card: #f9fafb; --input-bg: #fff;
+      --max-w: 720px; --space: 1.5rem;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #0f172a; --fg: #f1f5f9; --muted: #94a3b8;
+        --accent: #3b82f6; --accent-hover: #60a5fa; --success: #22c55e; --warn: #fbbf24; --error: #ef4444;
+        --border: #1e293b; --card: #111827; --input-bg: #1e293b; }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', system-ui, sans-serif; line-height: 1.6; color: var(--fg); background: var(--bg); }
+    .wrap { max-width: var(--max-w); margin: 0 auto; padding: 0 var(--space); }
+    header { padding: 2rem 0 1.5rem; border-bottom: 1px solid var(--border); text-align: center; }
+    h1 { font-size: clamp(1.75rem, 4vw, 2.25rem); font-weight: 700; line-height: 1.2; margin-bottom: 0.5rem; }
+    .tagline { color: var(--muted); font-size: 1rem; max-width: 600px; margin: 0 auto; }
+    main { padding: 2rem 0; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .grid { display: grid; gap: 1rem; grid-template-columns: 1fr; }
+    @media (min-width: 640px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+    .field { display: grid; gap: 0.375rem; }
+    label { font-weight: 500; font-size: 0.9rem; }
+    .input-wrap { position: relative; }
+    input, select {
+      width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: 8px;
+      font-family: inherit; font-size: 1rem; background: var(--input-bg); color: var(--fg);
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .input-wrap .prefix { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+    .input-wrap input { padding-left: 2.5rem; }
+    .input-wrap .suffix { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+    .input-wrap.suffix-input input { padding-right: 3rem; }
+    input:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent); }
+    input[aria-invalid="true"] { border-color: var(--error); }
+    .error-msg { color: var(--error); font-size: 0.75rem; display: none; }
+    .error-msg.visible { display: block; }
+    .help-text { font-size: 0.75rem; color: var(--muted); }
+    .btn-row { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 0.5rem; }
+    button { padding: 0.875rem 1.5rem; border: none; border-radius: 8px; font-family: inherit; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.15s, transform 0.05s; }
+    button:active { transform: scale(0.98); }
+    .btn-primary { background: var(--accent); color: white; flex: 1; min-width: 180px; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary { background: var(--border); color: var(--fg); }
+    .btn-secondary:hover { background: color-mix(in srgb, var(--border) 80%, transparent); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .results { display: grid; gap: 1rem; grid-template-columns: 1fr; margin-top: 1rem; }
+    @media (min-width: 640px) { .results { grid-template-columns: repeat(3, 1fr); } }
+    .result-card { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; text-align: center; }
+    .result-card.primary { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 5%, var(--bg)); }
+    .result-label { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.375rem; }
+    .result-value { font-size: 2rem; font-weight: 700; color: var(--fg); line-height: 1.2; }
+    .result-card.primary .result-value { color: var(--accent); }
+    .result-card.warn .result-value { color: var(--warn); }
+    .result-card.error .result-value { color: var(--error); }
+    .comparison { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+    .comparison h3 { font-size: 1rem; margin-bottom: 0.75rem; }
+    .compare-grid { display: grid; gap: 0.5rem; grid-template-columns: repeat(2, 1fr); font-size: 0.9rem; }
+    .compare-row { display: contents; }
+    .compare-label { color: var(--muted); }
+    .compare-value { font-weight: 600; text-align: right; }
+    .compare-value.positive { color: var(--success); }
+    .chart-wrap { margin-top: 1.5rem; height: 220px; position: relative; }
+    .chart-canvas { width: 100%; height: 100%; }
+    .chart-legend { display: flex; justify-content: center; gap: 1.5rem; margin-top: 0.75rem; font-size: 0.8rem; flex-wrap: wrap; }
+    .legend-item { display: flex; align-items: center; gap: 0.375rem; }
+    .legend-color { width: 12px; height: 12px; border-radius: 2px; }
+    .disclaimer { margin-top: 1.5rem; padding: 1rem; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; font-size: 0.8rem; color: var(--muted); }
+    .ad-slot { text-align: center; margin: 1.5rem 0; min-height: 90px; }
+    .ad-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; display: block; }
+    footer { padding: 2rem 0; border-top: 1px solid var(--border); text-align: center; color: var(--muted); font-size: 0.875rem; }
+    .nav { display: flex; justify-content: center; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
+    .nav a { padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 8px; font-weight: 500; font-size: 0.875rem; color: var(--fg); text-decoration: none; }
+    .nav a:hover { background: var(--card); }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Credit Card Payoff Calculator</h1>
+      <p class="tagline">Enter your balance, APR, and monthly payment. See the exact payoff date, total interest, and how extra payments accelerate your freedom.</p>
+    </header>
+
+    <nav class="nav" aria-label="Site navigation">
+      <a href="/">Home</a>
+      <a href="/guides/">Guides</a>
+      <a href="/tools/">Tools</a>
+      <a href="/about/">About</a>
+    </nav>
+
+    <main>
+      <article class="card">
+        <form id="payoff-form" novalidate>
+          <div class="grid">
+            <div class="field">
+              <label for="balance">Current Balance <span aria-hidden="true">*</span></label>
+              <div class="input-wrap">
+                <span class="prefix">$</span>
+                <input type="number" id="balance" name="balance" min="0" step="100" required autocomplete="off" placeholder="5000">
+                <span class="error-msg" id="balance-error"></span>
+              </div>
+            </div>
+            <div class="field">
+              <label for="apr">APR (Annual %) <span aria-hidden="true">*</span></label>
+              <div class="input-wrap suffix-input">
+                <input type="number" id="apr" name="apr" min="0" max="36" step="0.01" required autocomplete="off" placeholder="24.99">
+                <span class="suffix">%</span>
+                <span class="error-msg" id="apr-error"></span>
+              </div>
+            </div>
+            <div class="field">
+              <label for="payment">Monthly Payment <span aria-hidden="true">*</span></label>
+              <div class="input-wrap">
+                <span class="prefix">$</span>
+                <input type="number" id="payment" name="payment" min="1" step="50" required autocomplete="off" placeholder="200">
+                <span class="error-msg" id="payment-error"></span>
+              </div>
+            </div>
+            <div class="field">
+              <label for="extra">Extra Monthly Payment (optional)</label>
+              <div class="input-wrap">
+                <span class="prefix">$</span>
+                <input type="number" id="extra" name="extra" min="0" step="50" autocomplete="off" placeholder="0" value="0">
+              </div>
+              <p class="help-text">Additional amount you'll pay each month on top of the minimum.</p>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button type="submit" class="btn-primary" id="calc-btn">Calculate Payoff</button>
+            <button type="button" class="btn-secondary" id="reset-btn">Reset</button>
+          </div>
+        </form>
+
+        <div id="results" class="hidden">
+          <div class="results">
+            <div class="result-card primary">
+              <div class="result-label">Payoff Date</div>
+              <div class="result-value" id="payoff-date">—</div>
+            </div>
+            <div class="result-card">
+              <div class="result-label">Months to Freedom</div>
+              <div class="result-value" id="months-total">—</div>
+            </div>
+            <div class="result-card warn">
+              <div class="result-label">Total Interest Paid</div>
+              <div class="result-value" id="total-interest">—</div>
+            </div>
+          </div>
+
+          <div class="comparison" id="comparison" class="hidden">
+            <h3>With vs. Without Extra Payment</h3>
+            <div class="compare-grid">
+              <div class="compare-label">Scenario</div>
+              <div class="compare-value">Base</div>
+              <div class="compare-label">Scenario</div>
+              <div class="compare-value">With Extra</div>
+              <div class="compare-label">Months to Payoff</div>
+              <div class="compare-value" id="base-months">—</div>
+              <div class="compare-label">Months to Payoff</div>
+              <div class="compare-value" id="extra-months">—</div>
+              <div class="compare-label">Total Interest</div>
+              <div class="compare-value" id="base-interest">—</div>
+              <div class="compare-label">Total Interest</div>
+              <div class="compare-value positive" id="extra-interest">—</div>
+              <div class="compare-label">Time Saved</div>
+              <div class="compare-value"></div>
+              <div class="compare-label">Interest Saved</div>
+              <div class="compare-value positive" id="interest-saved">—</div>
+            </div>
+          </div>
+
+          <div class="chart-wrap" id="chart-wrap" class="hidden">
+            <canvas class="chart-canvas" id="payoff-chart" aria-label="Balance over time chart"></canvas>
+            <div class="chart-legend">
+              <div class="legend-item"><span class="legend-color" style="background:#2563eb"></span> Base Payment</div>
+              <div class="legend-item"><span class="legend-color" style="background:#16a34a"></span> With Extra Payment</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="disclaimer">
+          <strong>Disclaimer:</strong> This calculator provides estimates only. Actual payoff may vary due to compounding method, fees, rate changes, or payment timing. Always confirm with your issuer. Not financial advice.
+        </div>
+      </article>
+
+      <!-- AD SLOT -->
+      <div class="ad-slot">
+        <span class="ad-label">Advertisement</span>
+        <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="YOUR_SLOT_PAYOFF" data-ad-format="auto" data-full-width-responsive="true"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+      </div>
+
+      <article class="card">
+        <h2>How It Works</h2>
+        <p>This calculator uses the standard amortization formula for revolving credit:</p>
+        <pre><code>n = -log(1 - (r × B) / P) / log(1 + r)
+Where: r = monthly rate (APR/12), B = balance, P = monthly payment</code></pre>
+        <p>Assumptions:</p>
+        <ul>
+          <li>Interest compounds monthly (most common for credit cards)</li>
+          <li>No new charges added during payoff</li>
+          <li>Payment applies to interest first, then principal</li>
+          <li>Minimum payment = max(interest + 1% of balance, $25) — but you enter your actual planned payment</li>
+        </ul>
+        <h3>Tips to Pay Off Faster</h3>
+        <ul>
+          <li><strong>Pay more than minimum:</strong> Even $50 extra/month saves years and thousands in interest</li>
+          <li><strong>Target highest APR first (avalanche):</strong> Mathematically optimal</li>
+          <li><strong>Consider 0% balance transfer:</strong> Pause interest for 12-21 months (watch 3-5% fee)</li>
+          <li><strong>Automate payments:</strong> Never miss a due date — late fees + penalty APR kill progress</li>
+        </ul>
+      </article>
+
+      <article class="card" style="text-align: center;">
+        <h2>Want a Custom Plan?</h2>
+        <p style="max-width: 500px; margin: 1rem auto;">Multiple cards? Different APRs? <a href="/contact/">Tell us your situation</a> — we'll build a personalized payoff strategy for a future guide.</p>
+      </article>
+    </main>
+
+    <footer>
+      <p>&copy; 2024 [SITE NAME]. <a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a> · <a href="/contact/">Contact</a> · <a href="/disclaimer/">Advertiser Disclosure</a></p>
+      <p style="margin-top: 0.5rem;">This site uses Google AdSense. <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener">How Google uses data</a>.</p>
+    </footer>
+  </div>
+
+  <script>
+    (function() {
+      const form = document.getElementById('payoff-form');
+      const results = document.getElementById('results');
+      const comparison = document.getElementById('comparison');
+      const chartWrap = document.getElementById('chart-wrap');
+      const calcBtn = document.getElementById('calc-btn');
+      const resetBtn = document.getElementById('reset-btn');
+      const ctx = document.getElementById('payoff-chart').getContext('2d');
+      let chart = null;
+
+      function fmtMoney(n) { return '$' + n.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
+      function fmtInt(n) { return n.toLocaleString(); }
+
+      function validate() {
+        let valid = true;
+        const balance = parseFloat(form.balance.value);
+        const apr = parseFloat(form.apr.value);
+        const payment = parseFloat(form.payment.value);
+        const extra = parseFloat(form.extra.value) || 0;
+
+        ['balance','apr','payment'].forEach(id => {
+          const el = form[id];
+          const err = document.getElementById(id + '-error');
+          if (!el.value || parseFloat(el.value) <= 0) {
+            el.setAttribute('aria-invalid', 'true');
+            err.textContent = 'Required: enter a positive number';
+            err.classList.add('visible');
+            valid = false;
+          } else {
+            el.removeAttribute('aria-invalid');
+            err.classList.remove('visible');
+          }
+        });
+        if (apr > 36) {
+          form.apr.setAttribute('aria-invalid', 'true');
+          document.getElementById('apr-error').textContent = 'APR seems too high (max 36%)';
+          document.getElementById('apr-error').classList.add('visible');
+          valid = false;
+        }
+        const monthlyRate = apr / 100 / 12;
+        const minPayment = Math.max(balance * monthlyRate + balance * 0.01, 25);
+        if (payment < minPayment) {
+          form.payment.setAttribute('aria-invalid', 'true');
+          document.getElementById('payment-error').textContent = `Payment too low — minimum is ~${fmtMoney(minPayment)} to cover interest`;
+          document.getElementById('payment-error').classList.add('visible');
+          valid = false;
+        }
+        if (payment <= balance * monthlyRate) {
+          form.payment.setAttribute('aria-invalid', 'true');
+          document.getElementById('payment-error').textContent = 'Payment must exceed monthly interest or you\'ll never pay off';
+          document.getElementById('payment-error').classList.add('visible');
+          valid = false;
+        }
+        return valid;
+      }
+
+      function calculatePayoff(balance, apr, payment) {
+        const r = apr / 100 / 12;
+        let bal = balance;
+        let months = 0;
+        const history = [{month: 0, balance: bal}];
+        while (bal > 0.5 && months < 1200) { // safety cap: 100 years
+          const interest = bal * r;
+          const principal = Math.min(payment - interest, bal);
+          bal -= principal;
+          months++;
+          if (months % 6 === 0 || bal <= 0.5) history.push({month: months, balance: Math.max(0, bal)});
+        }
+        const totalPaid = months * payment;
+        const totalInterest = totalPaid - balance;
+        const payoffDate = new Date();
+        payoffDate.setMonth(payoffDate.getMonth() + months);
+        return {months, totalInterest, totalPaid, payoffDate, history};
+      }
+
+      function renderResults(base, extra) {
+        document.getElementById('payoff-date').textContent = base.payoffDate.toLocaleDateString(undefined, {month: 'short', year: 'numeric'});
+        document.getElementById('months-total').textContent = base.months;
+        document.getElementById('total-interest').textContent = fmtMoney(base.totalInterest);
+
+        if (extra && extra.months < base.months) {
+          comparison.classList.remove('hidden');
+          document.getElementById('base-months').textContent = base.months;
+          document.getElementById('extra-months').textContent = extra.months;
+          document.getElementById('base-interest').textContent = fmtMoney(base.totalInterest);
+          document.getElementById('extra-interest').textContent = fmtMoney(extra.totalInterest);
+          document.getElementById('interest-saved').textContent = fmtMoney(base.totalInterest - extra.totalInterest);
+        } else {
+          comparison.classList.add('hidden');
+        }
+        renderChart(base.history, extra?.history);
+      }
+
+      function renderChart(baseHist, extraHist) {
+        chartWrap.classList.remove('hidden');
+        const labels = baseHist.map(d => d.month);
+        const baseData = baseHist.map(d => d.balance);
+        const extraData = extraHist ? extraHist.map(d => d.balance) : [];
+
+        if (chart) chart.destroy();
+        chart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [
+              { label: 'Base', data: baseData, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.1)', fill: true, tension: 0.3, pointRadius: 0 },
+              ...(extraHist ? [{ label: 'Extra', data: extraData, borderColor: '#16a34a', backgroundColor: 'rgba(22,163,74,0.1)', fill: true, tension: 0.3, pointRadius: 0 }] : [])
+            ]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { title: { display: true, text: 'Months' }, grid: { color: 'rgba(0,0,0,0.05)' } },
+              y: { title: { display: true, text: 'Balance ($)' }, beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' },
+                ticks: { callback: v => '$' + v.toLocaleString() } }
+            },
+            interaction: { intersect: false, mode: 'index' }
+          }
+        });
+      }
+
+      form.addEventListener('submit', e => {
+        e.preventDefault();
+        if (!validate()) return;
+        calcBtn.disabled = true;
+        calcBtn.textContent = 'Calculating...';
+
+        const balance = parseFloat(form.balance.value);
+        const apr = parseFloat(form.apr.value);
+        const payment = parseFloat(form.payment.value);
+        const extra = parseFloat(form.extra.value) || 0;
+
+        const base = calculatePayoff(balance, apr, payment);
+        const withExtra = extra > 0 ? calculatePayoff(balance, apr, payment + extra) : null;
+
+        renderResults(base, withExtra);
+        results.classList.remove('hidden');
+
+        calcBtn.disabled = false;
+        calcBtn.textContent = 'Calculate Payoff';
+      });
+
+      resetBtn.addEventListener('click', () => {
+        form.reset();
+        results.classList.add('hidden');
+        comparison.classList.add('hidden');
+        chartWrap.classList.add('hidden');
+        if (chart) { chart.destroy(); chart = null; }
+        ['balance','apr','payment'].forEach(id => {
+          form[id].removeAttribute('aria-invalid');
+          document.getElementById(id + '-error').classList.remove('visible');
+        });
+      });
+
+      // Load Chart.js from CDN
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js';
+      script.onload = () => { window.Chart = Chart; };
+      document.head.appendChild(script);
+    })();
+  </script>
+</body>
+</html>

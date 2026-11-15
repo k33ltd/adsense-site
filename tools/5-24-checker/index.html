@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="5/24 Status Checker — enter your recent card approvals to see if you're under Chase's 5/24 rule and which cards to target next.">
+  <title>5/24 Status Checker | [SITE NAME]</title>
+  <link rel="canonical" href="https://YOUR-DOMAIN.com/tools/5-24-checker/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg: #ffffff; --fg: #111827; --muted: #6b7280;
+      --accent: #2563eb; --accent-hover: #1d4ed8; --success: #16a34a; --warn: #f59e0b; --error: #dc2626;
+      --border: #e5e7eb; --card: #f9fafb; --input-bg: #fff;
+      --max-w: 720px; --space: 1.5rem;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #0f172a; --fg: #f1f5f9; --muted: #94a3b8;
+        --accent: #3b82f6; --accent-hover: #60a5fa; --success: #22c55e; --warn: #fbbf24; --error: #ef4444;
+        --border: #1e293b; --card: #111827; --input-bg: #1e293b; }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', system-ui, sans-serif; line-height: 1.6; color: var(--fg); background: var(--bg); }
+    .wrap { max-width: var(--max-w); margin: 0 auto; padding: 0 var(--space); }
+    header { padding: 2rem 0 1.5rem; border-bottom: 1px solid var(--border); text-align: center; }
+    h1 { font-size: clamp(1.75rem, 4vw, 2.25rem); font-weight: 700; line-height: 1.2; margin-bottom: 0.5rem; }
+    .tagline { color: var(--muted); font-size: 1rem; max-width: 600px; margin: 0 auto; }
+    main { padding: 2rem 0; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .status-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.25rem; border-radius: 9999px; font-weight: 600; font-size: 1rem; margin-bottom: 1.5rem; }
+    .status-badge.under { background: color-mix(in srgb, var(--success) 15%, var(--bg)); border: 1px solid var(--success); color: var(--success); }
+    .status-badge.over { background: color-mix(in srgb, var(--error) 15%, var(--bg)); border: 1px solid var(--error); color: var(--error); }
+    .status-badge .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .status-badge.under .dot { background: var(--success); }
+    .status-badge.over .dot { background: var(--error); }
+    .entries { display: grid; gap: 0.75rem; margin-bottom: 1rem; }
+    .entry-row { display: grid; grid-template-columns: 1fr 140px auto; gap: 0.5rem; align-items: end; }
+    @media (max-width: 500px) { .entry-row { grid-template-columns: 1fr; } }
+    .field { display: grid; gap: 0.375rem; }
+    label { font-weight: 500; font-size: 0.85rem; color: var(--muted); }
+    input, select {
+      width: 100%; padding: 0.625rem 0.875rem; border: 1px solid var(--border); border-radius: 8px;
+      font-family: inherit; font-size: 0.95rem; background: var(--input-bg); color: var(--fg);
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    input:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent); }
+    .btn-row { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 0.5rem; }
+    button { padding: 0.75rem 1.25rem; border: none; border-radius: 8px; font-family: inherit; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary { background: var(--border); color: var(--fg); }
+    .btn-secondary:hover { background: color-mix(in srgb, var(--border) 80%, transparent); }
+    .btn-danger { background: var(--error); color: white; }
+    .btn-danger:hover { background: #b91c1c; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .results { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+    .results.hidden { display: none; }
+    .result-grid { display: grid; gap: 1rem; grid-template-columns: 1fr; margin-bottom: 1.5rem; }
+    @media (min-width: 640px) { .result-grid { grid-template-columns: repeat(3, 1fr); } }
+    .result-box { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; text-align: center; }
+    .result-box.highlight { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 5%, var(--bg)); }
+    .result-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.375rem; }
+    .result-value { font-size: 2.5rem; font-weight: 700; color: var(--fg); line-height: 1.1; }
+    .result-box.highlight .result-value { color: var(--accent); }
+    .result-box.success .result-value { color: var(--success); }
+    .result-box.warn .result-value { color: var(--warn); }
+    .next-clear { margin-top: 1rem; padding: 1rem; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; text-align: center; }
+    .next-clear strong { color: var(--accent); }
+    .card-list { display: grid; gap: 0.75rem; }
+    .card-item { display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; }
+    .card-item.eligible { border-color: var(--success); background: color-mix(in srgb, var(--success) 5%, var(--bg)); }
+    .card-item.not-eligible { opacity: 0.6; }
+    .card-icon { width: 44px; height: 28px; border-radius: 4px; background: var(--border); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.7rem; color: var(--muted); flex-shrink: 0; }
+    .card-info { flex: 1; min-width: 0; }
+    .card-name { font-weight: 600; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-details { font-size: 0.8rem; color: var(--muted); display: flex; gap: 1rem; flex-wrap: wrap; }
+    .card-tag { font-size: 0.65rem; padding: 0.125rem 0.5rem; border-radius: 9999px; font-weight: 600; background: var(--border); color: var(--fg); }
+    .card-tag.chase { background: color-mix(in srgb, var(--accent) 15%, var(--bg)); color: var(--accent); }
+    .card-tag.premium { background: color-mix(in srgb, var(--warn) 15%, var(--bg)); color: var(--warn); }
+    .card-tag.no-fee { background: color-mix(in srgb, var(--success) 15%, var(--bg)); color: var(--success); }
+    .card-status { font-size: 0.8rem; font-weight: 600; padding: 0.25rem 0.75rem; border-radius: 9999px; }
+    .card-status.eligible { background: color-mix(in srgb, var(--success) 15%, var(--bg)); color: var(--success); }
+    .card-status.not-eligible { background: color-mix(in srgb, var(--muted) 15%, var(--bg)); color: var(--muted); }
+    .explanation { margin-top: 1.5rem; padding: 1rem; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; }
+    .explanation h3 { margin-bottom: 0.5rem; font-size: 1rem; }
+    .explanation ul { margin-left: 1.25rem; }
+    .explanation li { margin-bottom: 0.375rem; }
+    .ad-slot { text-align: center; margin: 1.5rem 0; min-height: 90px; }
+    .ad-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; display: block; }
+    footer { padding: 2rem 0; border-top: 1px solid var(--border); text-align: center; color: var(--muted); font-size: 0.875rem; }
+    .nav { display: flex; justify-content: center; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
+    .nav a { padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 8px; font-weight: 500; font-size: 0.875rem; color: var(--fg); text-decoration: none; }
+    .nav a:hover { background: var(--card); }
+    .hidden { display: none !important; }
+    .help-text { font-size: 0.75rem; color: var(--muted); margin-top: 0.25rem; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>5/24 Status Checker</h1>
+      <p class="tagline">Enter your recent credit card approvals. Instantly see if you're under Chase's 5/24 rule, when you'll be clear, and which cards to target next.</p>
+    </header>
+
+    <nav class="nav" aria-label="Site navigation">
+      <a href="/">Home</a>
+      <a href="/guides/">Guides</a>
+      <a href="/tools/">Tools</a>
+      <a href="/about/">About</a>
+    </nav>
+
+    <main>
+      <article class="card">
+        <form id="checker-form" novalidate>
+          <div id="entries-container" class="entries"></div>
+          <div class="btn-row">
+            <button type="button" class="btn-secondary" id="add-entry">+ Add Another Card</button>
+            <button type="submit" class="btn-primary">Check My Status</button>
+          </div>
+          <p class="help-text">Enter all personal credit card approvals from the last 24 months (any bank). Business cards *usually* don't count — see explanation below.</p>
+        </form>
+
+        <div id="results" class="results hidden">
+          <div id="status-badge" class="status-badge"></div>
+
+          <div class="result-grid">
+            <div class="result-box highlight">
+              <div class="result-label">Cards in Last 24 Months</div>
+              <div class="result-value" id="count-24">0</div>
+            </div>
+            <div class="result-box success">
+              <div class="result-label">Slots Remaining</div>
+              <div class="result-value" id="slots-remaining">5</div>
+            </div>
+            <div class="result-box warn">
+              <div class="result-label">Next Card Drops Off</div>
+              <div class="result-value" id="next-clear-date">—</div>
+            </div>
+          </div>
+
+          <div id="next-clear-msg" class="next-clear hidden"></div>
+
+          <h2 style="margin: 1.5rem 0 1rem;">Chase Cards: Eligibility</h2>
+          <div id="card-list" class="card-list"></div>
+
+          <div class="explanation">
+            <h3>How 5/24 Works</h3>
+            <ul>
+              <li><strong>Rule:</strong> Chase denies most applications if you've opened 5+ personal credit cards (any bank) in the last 24 months.</li>
+              <li><strong>Counts:</strong> Personal cards from Chase, Amex, Capital One, Citi, BofA, Discover, store cards, credit union cards.</li>
+              <li><strong>Usually doesn't count:</strong> Most business cards (Chase Ink, Amex Business, Capital One Spark, Citi Business), authorized user accounts, charge cards without preset limit (Amex Platinum/Gold *personal* do count).</li>
+              <li><strong>Timing:</strong> Based on *approval date*, not application date. 24-month rolling window.</li>
+              <li><strong>Strategy:</strong> If you're at 4/24, apply for Chase cards *first* before any non-Chase cards.</li>
+            </ul>
+          </div>
+        </div>
+      </article>
+
+      <!-- AD SLOT -->
+      <div class="ad-slot">
+        <span class="ad-label">Advertisement</span>
+        <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="YOUR_SLOT_524" data-ad-format="auto" data-full-width-responsive="true"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+      </div>
+
+      <article class="card">
+        <h2>Recommended Chase Cards by Profile</h2>
+        <p>Once you're under 5/24, here's the typical application order:</p>
+        <ol style="margin-left: 1.25rem; margin-bottom: 1rem;">
+          <li><strong>Chase Sapphire Preferred®</strong> — 60K bonus, 1.25¢ portal, 14 transfer partners. Best all-rounder.</li>
+          <li><strong>Chase Sapphire Reserve®</strong> — 60K bonus, 1.5¢ portal, Priority Pass, $300 travel credit. If you'll use perks.</li>
+          <li><strong>Chase Freedom Flex℠</strong> — No fee, 5% rotating categories, 3% dining/drugstores. Pair with CSP for 5x UR.</li>
+          <li><strong>Chase Freedom Unlimited®</strong> — No fee, 1.5% base, 3% dining/drugstores, 5% travel (portal). Simple flat-earner.</li>
+          <li><strong>Ink Business Preferred®</strong> — 100K+ bonus, 3x shipping/ads/internet. Business spend → personal UR pool.</li>
+          <li><strong>United / Southwest / Hyatt / Marriott / IHG</strong> — Co-branded if you're loyal to one program.</li>
+        </ol>
+        <p><a href="/guides/5-24-rule-explained/">Read the full 5/24 guide →</a></p>
+      </article>
+    </main>
+
+    <footer>
+      <p>&copy; 2024 [SITE NAME]. <a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a> · <a href="/contact/">Contact</a> · <a href="/disclaimer/">Advertiser Disclosure</a></p>
+      <p style="margin-top: 0.5rem;">This site uses Google AdSense. <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener">How Google uses data</a>.</p>
+    </footer>
+  </div>
+
+  <script>
+    (function() {
+      const container = document.getElementById('entries-container');
+      const form = document.getElementById('checker-form');
+      const results = document.getElementById('results');
+      const statusBadge = document.getElementById('status-badge');
+      const count24 = document.getElementById('count-24');
+      const slotsRemaining = document.getElementById('slots-remaining');
+      const nextClearDate = document.getElementById('next-clear-date');
+      const nextClearMsg = document.getElementById('next-clear-msg');
+      const cardList = document.getElementById('card-list');
+      let entryCount = 0;
+
+      const CHASE_CARDS = [
+        { id: 'csp', name: 'Chase Sapphire Preferred®', fee: 95, bonus: '60K', categories: '5x travel (portal), 3x dining/streaming, 2x travel', tags: ['chase'], req: 'under 5/24' },
+        { id: 'csr', name: 'Chase Sapphire Reserve®', fee: 550, bonus: '60K', categories: '10x hotels/cars (portal), 5x flights, 3x dining/travel', tags: ['chase','premium'], req: 'under 5/24' },
+        { id: 'cff', name: 'Chase Freedom Flex℠', fee: 0, bonus: '$200', categories: '5% rotating, 3% dining/drugstores, 1% else', tags: ['chase','no-fee'], req: 'under 5/24' },
+        { id: 'cfu', name: 'Chase Freedom Unlimited®', fee: 0, bonus: '1.5%/3%/5%', categories: '1.5% base, 3% dining/drugstores, 5% travel (portal)', tags: ['chase','no-fee'], req: 'under 5/24' },
+        { id: 'inkp', name: 'Ink Business Preferred®', fee: 95, bonus: '100K+', categories: '3x shipping/ads/internet/cable/phone, 1x else', tags: ['chase','business'], req: 'under 5/24 (business)' },
+        { id: 'united', name: 'United Quest℠', fee: 250, bonus: '60K+', categories: '3x United, 2x dining/hotel, 1x else', tags: ['chase','co-branded'], req: 'under 5/24' },
+        { id: 'sw', name: 'Southwest Rapid Rewards® Priority', fee: 149, bonus: '40K+', categories: '2x Southwest, 1x else', tags: ['chase','co-branded'], req: 'under 5/24' },
+        { id: 'hyatt', name: 'World of Hyatt', fee: 95, bonus: '30K+', categories: '4x Hyatt, 2x dining/fitness/travel, 1x else', tags: ['chase','co-branded'], req: 'under 5/24' },
+        { id: 'marriott', name: 'Marriott Bonvoy Boundless®', fee: 95, bonus: '75K+', categories: '6x Marriott, 2x travel, 1x else', tags: ['chase','co-branded'], req: 'under 5/24' },
+        { id: 'ihg', name: 'IHG One Rewards Premier', fee: 99, bonus: '140K+', categories: '10x IHG, 2x dining/gas/travel, 1x else', tags: ['chase','co-branded'], req: 'under 5/24' },
+      ];
+
+      function createEntry(cardName = '', date = '') {
+        const id = ++entryCount;
+        const div = document.createElement('div');
+        div.className = 'entry-row';
+        div.dataset.id = id;
+        div.innerHTML = `
+          <div class="field">
+            <label>Card Name</label>
+            <input type="text" name="card-${id}" placeholder="e.g., Amex Gold, Citi Custom Cash" value="${cardName}" maxlength="50">
+          </div>
+          <div class="field">
+            <label>Approval Month/Year</label>
+            <input type="month" name="date-${id}" value="${date}" max="${getMaxDate()}">
+          </div>
+          <button type="button" class="btn-danger" style="padding:0.5rem 0.75rem; font-size:0.85rem;" data-id="${id}" aria-label="Remove">×</button>
+        `;
+        container.appendChild(div);
+        return div;
+      }
+
+      function getMaxDate() {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+      }
+
+      function parseEntries() {
+        const entries = [];
+        const today = new Date();
+        const cutoff = new Date(today);
+        cutoff.setMonth(cutoff.getMonth() - 24);
+
+        container.querySelectorAll('.entry-row').forEach(row => {
+          const id = row.dataset.id;
+          const name = row.querySelector(`input[name="card-${id}"]`).value.trim();
+          const dateStr = row.querySelector(`input[name="date-${id}"]`).value;
+          if (name && dateStr) {
+            const [y, m] = dateStr.split('-').map(Number);
+            const approvalDate = new Date(y, m - 1, 1);
+            if (approvalDate >= cutoff && approvalDate <= today) {
+              entries.push({name, date: approvalDate});
+            }
+          }
+        });
+        return entries.sort((a,b) => b.date - a.date); // newest first
+      }
+
+      function renderResults(entries) {
+        const count = entries.length;
+        const under = count < 5;
+        count24.textContent = count;
+        slotsRemaining.textContent = Math.max(0, 5 - count);
+
+        statusBadge.className = 'status-badge ' + (under ? 'under' : 'over');
+        statusBadge.innerHTML = `<span class="dot"></span> ${under ? '✅ UNDER 5/24 — You\'re eligible for Chase cards' : '❌ OVER 5/24 — Chase applications will likely be denied'}`;
+
+        if (count > 0) {
+          const oldest = entries[entries.length - 1];
+          const dropDate = new Date(oldest.date);
+          dropDate.setMonth(dropDate.getMonth() + 24);
+          nextClearDate.textContent = dropDate.toLocaleDateString(undefined, {month: 'short', year: 'numeric'});
+          nextClearMsg.classList.remove('hidden');
+          nextClearMsg.innerHTML = `Your oldest card (<strong>${oldest.name}</strong> from ${oldest.date.toLocaleDateString(undefined, {month: 'short', year: 'numeric'})}) drops off in <strong>${Math.ceil((dropDate - today) / (1000*60*60*24*30))} months</strong> — around <strong>${dropDate.toLocaleDateString(undefined, {month: 'long', year: 'numeric'})}</strong>.`;
+        } else {
+          nextClearMsg.classList.add('hidden');
+        }
+
+        // Render card eligibility
+        cardList.innerHTML = '';
+        CHASE_CARDS.forEach(card => {
+          const eligible = under || card.tags.includes('business'); // business cards often exempt
+          const div = document.createElement('div');
+          div.className = `card-item ${eligible ? 'eligible' : 'not-eligible'}`;
+          div.innerHTML = `
+            <div class="card-icon">${card.id.toUpperCase().slice(0,3)}</div>
+            <div class="card-info">
+              <div class="card-name">${card.name}</div>
+              <div class="card-details">
+                <span>${card.fee === 0 ? 'No annual fee' : '$' + card.fee + '/yr'}</span>
+                <span>Bonus: ${card.bonus}</span>
+                <span>${card.categories}</span>
+              </div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:0.375rem; align-items:flex-end;">
+              ${card.tags.map(t => `<span class="card-tag ${t}">${t.replace('-',' ')}</span>`).join('')}
+              <span class="card-status ${eligible ? 'eligible' : 'not-eligible'}">${eligible ? '✓ Eligible' : '✗ Wait until under 5/24'}</span>
+            </div>
+          `;
+          cardList.appendChild(div);
+        });
+
+        results.classList.remove('hidden');
+      }
+
+      // Event delegation for remove buttons
+      container.addEventListener('click', e => {
+        if (e.target.matches('[data-id]')) {
+          e.target.closest('.entry-row').remove();
+        }
+      });
+
+      document.getElementById('add-entry').addEventListener('click', () => createEntry());
+
+      form.addEventListener('submit', e => {
+        e.preventDefault();
+        const entries = parseEntries();
+        renderResults(entries);
+        window.scrollTo({top: results.offsetTop - 80, behavior: 'smooth'});
+      });
+
+      // Initialize with 3 empty rows
+      for (let i = 0; i < 3; i++) createEntry();
+    })();
+  </script>
+</body>
+</html>

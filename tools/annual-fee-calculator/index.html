@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Annual Fee Worth-It Calculator — enter your spend by category to see which card's annual fee pays for itself and which doesn't.">
+  <title>Annual Fee Worth-It Calculator | [SITE NAME]</title>
+  <link rel="canonical" href="https://YOUR-DOMAIN.com/tools/annual-fee-calculator/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg: #ffffff; --fg: #111827; --muted: #6b7280;
+      --accent: #2563eb; --accent-hover: #1d4ed8; --success: #16a34a; --warn: #f59e0b; --error: #dc2626;
+      --border: #e5e7eb; --card: #f9fafb; --input-bg: #fff;
+      --max-w: 720px; --space: 1.5rem;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #0f172a; --fg: #f1f5f9; --muted: #94a3b8;
+        --accent: #3b82f6; --accent-hover: #60a5fa; --success: #22c55e; --warn: #fbbf24; --error: #ef4444;
+        --border: #1e293b; --card: #111827; --input-bg: #1e293b; }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', system-ui, sans-serif; line-height: 1.6; color: var(--fg); background: var(--bg); }
+    .wrap { max-width: var(--max-w); margin: 0 auto; padding: 0 var(--space); }
+    header { padding: 2rem 0 1.5rem; border-bottom: 1px solid var(--border); text-align: center; }
+    h1 { font-size: clamp(1.75rem, 4vw, 2.25rem); font-weight: 700; line-height: 1.2; margin-bottom: 0.5rem; }
+    .tagline { color: var(--muted); font-size: 1rem; max-width: 600px; margin: 0 auto; }
+    main { padding: 2rem 0; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .spend-grid { display: grid; gap: 1rem; grid-template-columns: 1fr; margin-bottom: 1.5rem; }
+    @media (min-width: 640px) { .spend-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 900px) { .spend-grid { grid-template-columns: repeat(4, 1fr); } }
+    .field { display: grid; gap: 0.375rem; }
+    label { font-weight: 500; font-size: 0.9rem; }
+    .input-wrap { position: relative; }
+    input, select {
+      width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: 8px;
+      font-family: inherit; font-size: 1rem; background: var(--input-bg); color: var(--fg);
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .input-wrap .prefix { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+    .input-wrap input { padding-left: 2.5rem; }
+    input:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent); }
+    .btn-row { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 0.5rem; }
+    button { padding: 0.875rem 1.5rem; border: none; border-radius: 8px; font-family: inherit; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+    .btn-primary { background: var(--accent); color: white; flex: 1; min-width: 180px; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary { background: var(--border); color: var(--fg); }
+    .btn-secondary:hover { background: color-mix(in srgb, var(--border) 80%, transparent); }
+    .results { margin-top: 1.5rem; }
+    .card-result { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; margin-bottom: 1rem; transition: border-color 0.15s; }
+    .card-result:hover { border-color: var(--accent); }
+    .card-result.worth-it { border-color: var(--success); border-width: 2px; background: color-mix(in srgb, var(--success) 5%, var(--bg)); }
+    .card-result.not-worth-it { opacity: 0.7; }
+    .card-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .card-name { font-size: 1.1rem; font-weight: 600; }
+    .card-fee { font-size: 0.85rem; color: var(--muted); }
+    .badge { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
+    .badge.worth-it { background: color-mix(in srgb, var(--success) 15%, var(--bg)); color: var(--success); }
+    .badge.not-worth-it { background: color-mix(in srgb, var(--muted) 15%, var(--bg)); color: var(--muted); }
+    .badge.break-even { background: color-mix(in srgb, var(--warn) 15%, var(--bg)); color: var(--warn); }
+    .metrics { display: grid; gap: 1rem; grid-template-columns: 1fr; }
+    @media (min-width: 640px) { .metrics { grid-template-columns: repeat(3, 1fr); } }
+    .metric { text-align: center; padding: 1rem; background: var(--card); border: 1px solid var(--border); border-radius: 8px; }
+    .metric-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; }
+    .metric-value { font-size: 1.5rem; font-weight: 700; color: var(--fg); }
+    .metric.positive .metric-value { color: var(--success); }
+    .metric.negative .metric-value { color: var(--error); }
+    .metric.neutral .metric-value { color: var(--warn); }
+    .breakdown { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+    .breakdown-row { display: flex; justify-content: space-between; padding: 0.375rem 0; font-size: 0.9rem; border-bottom: 1px solid var(--border); }
+    .breakdown-row:last-child { border-bottom: none; }
+    .breakdown-row.credit { color: var(--success); }
+    .breakdown-row.spend { color: var(--accent); }
+    .breakdown-label { color: var(--muted); }
+    .breakdown-value { font-weight: 600; }
+    .scenario-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .scenario-tab { padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--fg); font-weight: 500; font-size: 0.85rem; cursor: pointer; }
+    .scenario-tab.active { background: var(--accent); border-color: var(--accent); color: white; }
+    .scenario-panel { display: none; }
+    .scenario-panel.active { display: block; animation: fadeIn 0.2s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+    .preset-btns { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .preset-btn { padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--fg); font-size: 0.85rem; cursor: pointer; }
+    .preset-btn:hover { border-color: var(--accent); }
+    .ad-slot { text-align: center; margin: 1.5rem 0; min-height: 90px; }
+    .ad-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; display: block; }
+    footer { padding: 2rem 0; border-top: 1px solid var(--border); text-align: center; color: var(--muted); font-size: 0.875rem; }
+    .nav { display: flex; justify-content: center; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
+    .nav a { padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 8px; font-weight: 500; font-size: 0.875rem; color: var(--fg); text-decoration: none; }
+    .nav a:hover { background: var(--card); }
+    .disclaimer { margin-top: 1.5rem; padding: 1rem; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; font-size: 0.85rem; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Annual Fee Worth-It Calculator</h1>
+      <p class="tagline">Enter your monthly spend by category. See exactly which card's annual fee pays for itself — and which costs you money.</p>
+    </header>
+
+    <nav class="nav" aria-label="Site navigation">
+      <a href="/">Home</a>
+      <a href="/guides/">Guides</a>
+      <a href="/tools/">Tools</a>
+      <a href="/about/">About</a>
+    </nav>
+
+    <main>
+      <article class="card">
+        <div class="preset-btns" role="group" aria-label="Spend profile presets">
+          <button type="button" class="preset-btn" data-preset="light">Light ($1.5K/mo)</button>
+          <button type="button" class="preset-btn" data-preset="moderate">Moderate ($3.5K/mo)</button>
+          <button type="button" class="preset-btn" data-preset="heavy">Heavy ($6K/mo)</button>
+          <button type="button" class="preset-btn" data-preset="custom">Custom</button>
+        </div>
+
+        <form id="spend-form" novalidate>
+          <div class="spend-grid">
+            <div class="field">
+              <label for="spend-dining">Dining & Restaurants</label>
+              <div class="input-wrap"><span class="prefix">$</span><input type="number" id="spend-dining" name="dining" min="0" step="50" value="300" placeholder="300"></div>
+            </div>
+            <div class="field">
+              <label for="spend-groceries">Groceries (US Supermarkets)</label>
+              <div class="input-wrap"><span class="prefix">$</span><input type="number" id="spend-groceries" name="groceries" min="0" step="50" value="500" placeholder="500"></div>
+            </div>
+            <div class="field">
+              <label for="spend-travel">Travel (Flights, Hotels, Car Rental)</label>
+              <div class="input-wrap"><span class="prefix">$</span><input type="number" id="spend-travel" name="travel" min="0" step="50" value="400" placeholder="400"></div>
+            </div>
+            <div class="field">
+              <label for="spend-gas">Gas Stations</label>
+              <div class="input-wrap"><span class="prefix">$</span><input type="number" id="spend-gas" name="gas" min="0" step="50" value="150" placeholder="150"></div>
+            </div>
+            <div class="field">
+              <label for="spend-streaming">Streaming Services</label>
+              <div class="input-wrap"><span class="prefix">$</span><input type="number" id="spend-streaming" name="streaming" min="0" step="10" value="50" placeholder="50"></div>
+            </div>
+            <div class="field">
+              <label for="spend-drugstores">Drugstores / Pharmacies</label>
+              <div class="input-wrap"><span class="prefix">$</span><input type="number" id="spend-drugstores" name="drugstores" min="0" step="20" value="50" placeholder="50"></div>
+            </div>
+            <div class="field">
+              <label for="spend-office">Office Supply Stores</label>
+              <div class="input-wrap"><span class="prefix">$</span><input type="number" id="spend-office" name="office" min="0" step="20" value="0" placeholder="0"></div>
+            </div>
+            <div class="field">
+              <label for="spend-other">Everything Else</label>
+              <div class="input-wrap"><span class="prefix">$</span><input type="number" id="spend-other" name="other" min="0" step="50" value="800" placeholder="800"></div>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button type="submit" class="btn-primary">Calculate Worth-It</button>
+            <button type="button" class="btn-secondary" id="reset-spend">Reset</button>
+          </div>
+        </form>
+
+        <div id="spend-results" class="results hidden">
+          <div class="scenario-tabs" role="tablist" aria-label="View scenario">
+            <button class="scenario-tab active" role="tab" data-scenario="all" aria-selected="true">All Cards</button>
+            <button class="scenario-tab" role="tab" data-scenario="worth-it" aria-selected="false">Worth It Only</button>
+            <button class="scenario-tab" role="tab" data-scenario="not-worth-it" aria-selected="false">Not Worth It</button>
+          </div>
+
+          <div class="scenario-panel active" id="panel-all" role="tabpanel"></div>
+          <div class="scenario-panel" id="panel-worth-it" role="tabpanel"></div>
+          <div class="scenario-panel" id="panel-not-worth-it" role="tabpanel"></div>
+        </div>
+      </article>
+
+      <!-- AD SLOT -->
+      <div class="ad-slot">
+        <span class="ad-label">Advertisement</span>
+        <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="YOUR_SLOT_FEE" data-ad-format="auto" data-full-width-responsive="true"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+      </div>
+
+      <article class="card">
+        <h2>How the Math Works</h2>
+        <p>For each card, we calculate:</p>
+        <pre><code>Net Annual Value = (Spend × Earn Rate × Point Value) + Statement Credits + Perk Value − Annual Fee</code></pre>
+        <ul style="margin: 1rem 0 0 1.25rem;">
+          <li><strong>Point valuations:</strong> Chase UR 1.5¢ (Reserve) / 1.25¢ (Preferred), Amex MR 1¢ (Plat) / 0.6¢ (Gold), CapOne 1¢, Bilt 1¢</li>
+          <li><strong>Credits counted:</strong> Only automatic/universal credits (e.g., $300 travel, $120 dining, $100 airline). Targeted offers excluded.</li>
+          <li><strong>Perk value:</strong> Lounge access = $200/yr, hotel status = $150/yr, free night = $200/yr (conservative).</li>
+          <li><strong>Caps enforced:</strong> Amex Gold groceries $25K/yr, Chase Sapphire dining $25K/quarter (portal), etc.</li>
+        </ul>
+        <h3>Cards Compared</h3>
+        <div style="display: grid; gap: 0.5rem; grid-template-columns: 1fr; margin-top: 1rem;">
+          @media (min-width: 640px) { grid-template-columns: repeat(2, 1fr); }
+          <div style="padding:0.75rem; border:1px solid var(--border); border-radius:8px; background:var(--bg); font-size:0.9rem;"><strong>Chase Sapphire Preferred</strong> ($95) — 5x portal travel, 3x dining/streaming, 2x travel</div>
+          <div style="padding:0.75rem; border:1px solid var(--border); border-radius:8px; background:var(--bg); font-size:0.9rem;"><strong>Chase Sapphire Reserve</strong> ($550) — 10x portal hotels/cars, 5x flights, 3x dining/travel, $300 travel credit, Priority Pass</div>
+          <div style="padding:0.75rem; border:1px solid var(--border); border-radius:8px; background:var(--bg); font-size:0.9rem;"><strong>Amex Gold</strong> ($250) — 4x dining + US groceries (cap $25K), 3x flights, $120 dining + $100 Uber credits</div>
+          <div style="padding:0.75rem; border:1px solid var(--border); border-radius:8px; background:var(--bg); font-size:0.9rem;"><strong>Amex Platinum</strong> ($695) — 5x flights/hotels (Amex Travel), $200 airline + $200 hotel + $189 Clear + $240 Walmart+ credits</div>
+          <div style="padding:0.75rem; border:1px solid var(--border); border-radius:8px; background:var(--bg); font-size:0.9rem;"><strong>Capital One Venture X</strong> ($395) — 10x hotels/cars, 5x flights, 2x all, $300 travel credit, 10K anniversary miles, Priority Pass</div>
+          <div style="padding:0.75rem; border:1px solid var(--border); border-radius:8px; background:var(--bg); font-size:0.9rem;"><strong>Citi Custom Cash</strong> ($0) — 5x top category (up to $500/mo), 1x else. No fee baseline.</div>
+          <div style="padding:0.75rem; border:1px solid var(--border); border-radius:8px; background:var(--bg); font-size:0.9rem;"><strong>Chase Freedom Flex</strong> ($0) — 5x rotating (up to $1.5K/qtr), 3x dining/drugstores, 1x else.</div>
+          <div style="padding:0.75rem; border:1px solid var(--border); border-radius:8px; background:var(--bg); font-size:0.9rem;"><strong>Bilt Mastercard</strong> ($0) — 1x rent (no fee), 2x travel, 3x dining. Rent Day bonuses.</div>
+        </div>
+      </article>
+    </main>
+
+    <footer>
+      <p>&copy; 2024 [SITE NAME]. <a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a> · <a href="/contact/">Contact</a> · <a href="/disclaimer/">Advertiser Disclosure</a></p>
+      <p style="margin-top: 0.5rem;">This site uses Google AdSense. <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener">How Google uses data</a>.</p>
+    </footer>
+  </div>
+
+  <script>
+    (function() {
+      // Card definitions with earn structure
+      const CARDS = [
+        {
+          id: 'csp', name: 'Chase Sapphire Preferred®', fee: 95, portalRate: 1.25,
+          earn: { dining: 3, travel: 2, streaming: 3, other: 1 },
+          credits: [], perks: [], caps: { dining: 25000/12, travel: 25000/3 } // quarterly cap for portal
+        },
+        {
+          id: 'csr', name: 'Chase Sapphire Reserve®', fee: 550, portalRate: 1.5,
+          earn: { dining: 3, travel: 3, streaming: 3, other: 1 },
+          credits: [{name: '$300 Travel Credit', value: 300}],
+          perks: [{name: 'Priority Pass', value: 200}],
+          caps: {}
+        },
+        {
+          id: 'amex-gold', name: 'American Express® Gold', fee: 250, portalRate: 1.0,
+          earn: { dining: 4, groceries: 4, travel: 3, other: 1 },
+          credits: [{name: '$120 Dining Credit', value: 120}, {name: '$100 Uber Credit', value: 100}],
+          perks: [],
+          caps: { groceries: 25000/12 }
+        },
+        {
+          id: 'amex-plat', name: 'The Platinum Card®', fee: 695, portalRate: 1.0,
+          earn: { travel: 5, other: 1 },
+          credits: [{name: '$200 Airline Credit', value: 200}, {name: '$200 Hotel Credit', value: 200}, {name: '$189 Clear Credit', value: 189}, {name: '$240 Walmart+ Credit', value: 240}],
+          perks: [{name: 'Centurion/Priority Pass', value: 300}, {name: 'Hotel Status (Hilton/Marriott)', value: 200}],
+          caps: {}
+        },
+        {
+          id: 'venture-x', name: 'Capital One Venture X', fee: 395, portalRate: 1.0,
+          earn: { travel: 5, hotels: 10, cars: 10, other: 2 },
+          credits: [{name: '$300 Travel Credit', value: 300}],
+          perks: [{name: 'Priority Pass', value: 200}, {name: '10K Anniversary Miles', value: 100}],
+          caps: {}
+        },
+        {
+          id: 'citi-custom', name: 'Citi Custom Cash℠', fee: 0, portalRate: 1.0,
+          earn: { other: 1 }, // 5x top category handled separately
+          credits: [], perks: [],
+          caps: { bonusCap: 500 }, // $500/mo spend cap for 5%
+          special: 'custom-cash'
+        },
+        {
+          id: 'cff', name: 'Chase Freedom Flex℠', fee: 0, portalRate: 1.0,
+          earn: { dining: 3, drugstores: 3, other: 1 },
+          credits: [], perks: [],
+          caps: { rotatingCap: 1500/3 }, // $1.5K per quarter
+          special: 'rotating'
+        },
+        {
+          id: 'bilt', name: 'Bilt Mastercard®', fee: 0, portalRate: 1.0,
+          earn: { rent: 1, travel: 2, dining: 3, other: 1 },
+          credits: [], perks: [],
+          caps: {},
+          special: 'bilt'
+        }
+      ];
+
+      const POINT_VALUES = { chase: 1.5, amex: 1.0, capone: 1.0, bilt: 1.0 };
+
+      const PRESETS = {
+        light: { dining: 200, groceries: 300, travel: 100, gas: 100, streaming: 30, drugstores: 30, office: 0, other: 600 },
+        moderate: { dining: 300, groceries: 500, travel: 400, gas: 150, streaming: 50, drugstores: 50, office: 0, other: 800 },
+        heavy: { dining: 600, groceries: 800, travel: 1000, gas: 250, streaming: 80, drugstores: 80, office: 100, other: 1500 }
+      };
+
+      const form = document.getElementById('spend-form');
+      const results = document.getElementById('spend-results');
+      const panels = { all: document.getElementById('panel-all'), worthIt: document.getElementById('panel-worth-it'), notWorthIt: document.getElementById('panel-not-worth-it') };
+      const tabs = document.querySelectorAll('.scenario-tab');
+
+      function getSpend() {
+        const data = new FormData(form);
+        const spend = {};
+        ['dining','groceries','travel','gas','streaming','drugstores','office','other'].forEach(k => {
+          spend[k] = parseFloat(data.get(k)) || 0;
+        });
+        return spend;
+      }
+
+      function applyPreset(preset) {
+        const values = PRESETS[preset];
+        Object.entries(values).forEach(([k,v]) => {
+          form[k].value = v;
+        });
+      }
+
+      function calculateCardValue(card, spend) {
+        let pointsEarned = 0;
+        let breakdown = [];
+
+        // Standard earn
+        Object.entries(card.earn).forEach(([cat, mult]) => {
+          const monthly = spend[cat] || 0;
+          if (monthly > 0 && mult > 1) {
+            const annual = monthly * 12;
+            const capped = card.caps[cat] ? Math.min(annual, card.caps[cat] * 12) : annual;
+            const pts = capped * mult;
+            pointsEarned += pts;
+            breakdown.push({label: `${cat.charAt(0).toUpperCase()+cat.slice(1)} (${mult}x)`, value: pts, type: 'spend'});
+          }
+        });
+
+        // Special cards
+        if (card.special === 'custom-cash') {
+          // Top category gets 5x up to $500/mo = $6K/yr
+          const categories = ['dining','groceries','travel','gas','streaming','drugstores','office'];
+          let bestCat = 'other'; let bestSpend = spend.other || 0;
+          categories.forEach(c => { if ((spend[c]||0) > bestSpend) { bestSpend = spend[c]; bestCat = c; } });
+          const bonusAnnual = Math.min(bestSpend * 12, card.caps.bonusCap * 12);
+          const bonusPts = bonusAnnual * 5;
+          const basePts = (Object.values(spend).reduce((a,b)=>a+b,0) * 12 - bonusAnnual) * 1;
+          pointsEarned = bonusPts + basePts;
+          breakdown.push({label: `Top Category: ${bestCat} (5x)`, value: bonusPts, type: 'spend'});
+          breakdown.push({label: `Everything Else (1x)`, value: basePts, type: 'spend'});
+        } else if (card.special === 'rotating') {
+          // Assume 2 quarters dining, 2 quarters drugstores (typical)
+          const diningAnnual = (spend.dining||0) * 12;
+          const drugAnnual = (spend.drugstores||0) * 12;
+          const rotatingCap = card.caps.rotatingCap * 4; // annual
+          const bonusDining = Math.min(diningAnnual/2, rotatingCap/2) * 5;
+          const bonusDrug = Math.min(drugAnnual/2, rotatingCap/2) * 5;
+          const basePts = (Object.values(spend).reduce((a,b)=>a+b,0) * 12 - rotatingCap) * 1;
+          pointsEarned = bonusDining + bonusDrug + basePts;
+          breakdown.push({label: `Rotating 5x (est.)`, value: bonusDining + bonusDrug, type: 'spend'});
+          breakdown.push({label: `Base 1x/3x`, value: basePts, type: 'spend'});
+        } else if (card.special === 'bilt') {
+          // Rent handled separately - assume $0 for now unless user adds rent field
+          Object.entries(card.earn).forEach(([cat, mult]) => {
+            if (cat === 'rent') return;
+            const monthly = spend[cat] || 0;
+            if (monthly > 0 && mult > 1) {
+              const pts = monthly * 12 * mult;
+              pointsEarned += pts;
+              breakdown.push({label: `${cat.charAt(0).toUpperCase()+cat.slice(1)} (${mult}x)`, value: pts, type: 'spend'});
+            }
+          });
+        }
+
+        // Credits
+        let creditsValue = 0;
+        card.credits.forEach(c => {
+          creditsValue += c.value;
+          breakdown.push({label: c.name, value: c.value, type: 'credit'});
+        });
+
+        // Perks
+        let perksValue = 0;
+        card.perks.forEach(p => {
+          perksValue += p.value;
+          breakdown.push({label: p.name, value: p.value, type: 'credit'});
+        });
+
+        // Determine point value based on issuer
+        let pv = 1.0;
+        if (card.id.startsWith('csp') || card.id.startsWith('csr')) pv = card.portalRate;
+        else if (card.id.startsWith('amex')) pv = 1.0; // Plat with Schwab = 1.25 but keep conservative
+        else if (card.id.startsWith('venture')) pv = 1.0;
+
+        const pointsValue = pointsEarned * pv / 100;
+        const netValue = pointsValue + creditsValue + perksValue - card.fee;
+
+        let status;
+        if (netValue > 50) status = 'worth-it';
+        else if (netValue > -50) status = 'break-even';
+        else status = 'not-worth-it';
+
+        return {
+          ...card,
+          pointsEarned,
+          pointsValue,
+          creditsValue,
+          perksValue,
+          netValue,
+          status,
+          breakdown
+        };
+      }
+
+      function renderCard(card) {
+        const statusLabels = { 'worth-it': '✅ Worth It', 'break-even': '⚖️ Break-Even', 'not-worth-it': '❌ Not Worth It' };
+        const statusClass = { 'worth-it': 'worth-it', 'break-even': 'break-even', 'not-worth-it': 'not-worth-it' };
+        const metricClass = { 'worth-it': 'positive', 'break-even': 'neutral', 'not-worth-it': 'negative' };
+
+        return `
+          <div class="card-result ${statusClass[card.status]}" data-status="${card.status}">
+            <div class="card-header">
+              <div>
+                <div class="card-name">${card.name}</div>
+                <div class="card-fee">Annual Fee: $${card.fee}</div>
+              </div>
+              <span class="badge ${statusClass[card.status]}">${statusLabels[card.status]}</span>
+            </div>
+            <div class="metrics">
+              <div class="metric ${metricClass[card.status]}">
+                <div class="metric-label">Net Annual Value</div>
+                <div class="metric-value">${card.netValue >= 0 ? '+' : ''}$${card.netValue.toFixed(0)}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Points Value</div>
+                <div class="metric-value">$${card.pointsValue.toFixed(0)}</div>
+              </div>
+              <div class="metric">
+                <div class="metric-label">Credits + Perks</div>
+                <div class="metric-value">$${(card.creditsValue + card.perksValue).toFixed(0)}</div>
+              </div>
+            </div>
+            <div class="breakdown">
+              ${card.breakdown.map(b => `
+                <div class="breakdown-row ${b.type}">
+                  <span class="breakdown-label">${b.label}</span>
+                  <span class="breakdown-value">${b.type === 'credit' ? '+' : ''}$${b.value.toFixed(0)}</span>
+                </div>
+              `).join('')}
+              <div class="breakdown-row" style="font-weight:600; border-top:2px solid var(--border); margin-top:0.5rem; padding-top:0.75rem;">
+                <span class="breakdown-label">Annual Fee</span>
+                <span class="breakdown-value">-$${card.fee}</span>
+              </div>
+              <div class="breakdown-row" style="font-weight:700; color:var(--fg);">
+                <span class="breakdown-label">Net Value</span>
+                <span class="breakdown-value ${metricClass[card.status]}">${card.netValue >= 0 ? '+' : ''}$${card.netValue.toFixed(0)}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      function renderResults(cardResults) {
+        const byStatus = { 'worth-it': [], 'break-even': [], 'not-worth-it': [] };
+        cardResults.forEach(c => byStatus[c.status].push(c));
+
+        panels.all.innerHTML = cardResults.map(renderCard).join('');
+        panels.worthIt.innerHTML = [...byStatus['worth-it'], ...byStatus['break-even']].map(renderCard).join('') || '<p style="text-align:center; color:var(--muted); padding:2rem;">No cards worth it at this spend level.</p>';
+        panels.notWorthIt.innerHTML = byStatus['not-worth-it'].map(renderCard).join('') || '<p style="text-align:center; color:var(--muted); padding:2rem;">All cards worth it at this spend level!</p>';
+
+        results.classList.remove('hidden');
+      }
+
+      // Preset buttons
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (btn.dataset.preset !== 'custom') applyPreset(btn.dataset.preset);
+        });
+      });
+
+      // Scenario tabs
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          tabs.forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
+          Object.values(panels).forEach(p => p.classList.remove('active'));
+          tab.classList.add('active');
+          tab.setAttribute('aria-selected', 'true');
+          const key = tab.dataset.scenario === 'all' ? 'all' : tab.dataset.scenario;
+          panels[key].classList.add('active');
+        });
+      });
+
+      form.addEventListener('submit', e => {
+        e.preventDefault();
+        const spend = getSpend();
+        const cardResults = CARDS.map(c => calculateCardValue(c, spend)).sort((a,b) => b.netValue - a.netValue);
+        renderResults(cardResults);
+      });
+
+      document.getElementById('reset-spend').addEventListener('click', () => {
+        form.reset();
+        results.classList.add('hidden');
+      });
+
+      // Initialize with moderate preset
+      applyPreset('moderate');
+    })();
+  </script>
+</body>
+</html>

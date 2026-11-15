@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Points Valuation Calculator — what are your Chase Ultimate Rewards, Amex Membership Rewards, Capital One Miles, and Bilt points really worth? Compare cash vs. transfer value.">
+  <title>Points Valuation Calculator | [SITE NAME]</title>
+  <link rel="canonical" href="https://YOUR-DOMAIN.com/tools/points-valuation/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg: #ffffff; --fg: #111827; --muted: #6b7280;
+      --accent: #2563eb; --accent-hover: #1d4ed8; --success: #16a34a; --warn: #f59e0b; --error: #dc2626;
+      --border: #e5e7eb; --card: #f9fafb; --input-bg: #fff;
+      --max-w: 720px; --space: 1.5rem;
+      --chase: #1a1a2e; --amex: #006fcf; --capone: #ec1c24; --bilt: #00c9a7;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #0f172a; --fg: #f1f5f9; --muted: #94a3b8;
+        --accent: #3b82f6; --accent-hover: #60a5fa; --success: #22c55e; --warn: #fbbf24; --error: #ef4444;
+        --border: #1e293b; --card: #111827; --input-bg: #1e293b; }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', system-ui, sans-serif; line-height: 1.6; color: var(--fg); background: var(--bg); }
+    .wrap { max-width: var(--max-w); margin: 0 auto; padding: 0 var(--space); }
+    header { padding: 2rem 0 1.5rem; border-bottom: 1px solid var(--border); text-align: center; }
+    h1 { font-size: clamp(1.75rem, 4vw, 2.25rem); font-weight: 700; line-height: 1.2; margin-bottom: 0.5rem; }
+    .tagline { color: var(--muted); font-size: 1rem; max-width: 600px; margin: 0 auto; }
+    main { padding: 2rem 0; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .currency-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .currency-tab { padding: 0.625rem 1.25rem; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--fg); font-weight: 500; font-size: 0.9rem; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 0.5rem; }
+    .currency-tab:hover { border-color: var(--accent); }
+    .currency-tab.active { border-color: currentColor; color: white; }
+    .currency-tab.chase.active { background: var(--chase); color: white; }
+    .currency-tab.amex.active { background: var(--amex); color: white; }
+    .currency-tab.capone.active { background: var(--capone); color: white; }
+    .currency-tab.bilt.active { background: var(--bilt); color: white; }
+    .currency-tab .dot { width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; animation: fadeIn 0.2s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+    .input-grid { display: grid; gap: 1rem; grid-template-columns: 1fr; margin-bottom: 1.5rem; }
+    @media (min-width: 640px) { .input-grid { grid-template-columns: repeat(2, 1fr); } }
+    .field { display: grid; gap: 0.375rem; }
+    label { font-weight: 500; font-size: 0.9rem; }
+    .input-wrap { position: relative; }
+    input, select {
+      width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: 8px;
+      font-family: inherit; font-size: 1rem; background: var(--input-bg); color: var(--fg);
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .input-wrap .prefix { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+    .input-wrap input { padding-left: 2.5rem; }
+    input:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent); }
+    .results { margin-top: 1rem; }
+    .valuation-grid { display: grid; gap: 1rem; grid-template-columns: 1fr; }
+    @media (min-width: 640px) { .valuation-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 900px) { .valuation-grid { grid-template-columns: repeat(4, 1fr); } }
+    .valuation-card { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; text-align: center; transition: border-color 0.15s; }
+    .valuation-card:hover { border-color: var(--accent); }
+    .valuation-card.best { border-color: var(--success); border-width: 2px; background: color-mix(in srgb, var(--success) 5%, var(--bg)); }
+    .valuation-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.375rem; }
+    .valuation-value { font-size: 2rem; font-weight: 700; color: var(--fg); line-height: 1.2; margin-bottom: 0.5rem; }
+    .valuation-card.best .valuation-value { color: var(--success); }
+    .valuation-desc { font-size: 0.8rem; color: var(--muted); }
+    .transfer-section { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+    .transfer-section h3 { margin-bottom: 1rem; font-size: 1.1rem; }
+    .transfer-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; overflow-x: auto; display: block; }
+    .transfer-table th, .transfer-table td { padding: 0.625rem 0.75rem; border-bottom: 1px solid var(--border); text-align: left; }
+    .transfer-table th { font-weight: 600; color: var(--fg); position: sticky; top: 0; background: var(--card); z-index: 1; }
+    .transfer-table tr:hover td { background: color-mix(in srgb, var(--accent) 3%, var(--bg)); }
+    .transfer-table .partner { font-weight: 500; }
+    .transfer-table .ratio { font-family: monospace; color: var(--accent); font-weight: 600; }
+    .transfer-table .value { font-weight: 600; color: var(--success); }
+    .transfer-table .category { font-size: 0.75rem; color: var(--muted); text-transform: capitalize; }
+    .transfer-table .sweet { background: color-mix(in srgb, var(--success) 10%, var(--bg)); }
+    .transfer-table .sweet .partner::after { content: ' ⭐'; font-size: 0.8em; }
+    .summary { margin-top: 1.5rem; padding: 1rem; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; }
+    .summary h4 { margin-bottom: 0.5rem; font-size: 0.95rem; }
+    .summary ul { margin-left: 1.25rem; }
+    .summary li { margin-bottom: 0.25rem; }
+    .ad-slot { text-align: center; margin: 1.5rem 0; min-height: 90px; }
+    .ad-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; display: block; }
+    footer { padding: 2rem 0; border-top: 1px solid var(--border); text-align: center; color: var(--muted); font-size: 0.875rem; }
+    .nav { display: flex; justify-content: center; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
+    .nav a { padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 8px; font-weight: 500; font-size: 0.875rem; color: var(--fg); text-decoration: none; }
+    .nav a:hover { background: var(--card); }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Points Valuation Calculator</h1>
+      <p class="tagline">Enter your points balances. See cash value vs. transfer value across 50+ airline/hotel partners. Find your best redemption.</p>
+    </header>
+
+    <nav class="nav" aria-label="Site navigation">
+      <a href="/">Home</a>
+      <a href="/guides/">Guides</a>
+      <a href="/tools/">Tools</a>
+      <a href="/about/">About</a>
+    </nav>
+
+    <main>
+      <article class="card">
+        <div class="currency-tabs" role="tablist" aria-label="Select points currency">
+          <button class="currency-tab chase active" role="tab" data-tab="chase" aria-selected="true"><span class="dot"></span> Chase Ultimate Rewards</button>
+          <button class="currency-tab amex" role="tab" data-tab="amex" aria-selected="false"><span class="dot"></span> Amex Membership Rewards</button>
+          <button class="currency-tab capone" role="tab" data-tab="capone" aria-selected="false"><span class="dot"></span> Capital One Miles</button>
+          <button class="currency-tab bilt" role="tab" data-tab="bilt" aria-selected="false"><span class="dot"></span> Bilt Rewards</button>
+        </div>
+
+        <!-- CHASE PANEL -->
+        <div class="tab-panel active" id="panel-chase" role="tabpanel">
+          <div class="input-grid">
+            <div class="field">
+              <label for="chase-points">Chase UR Points Balance</label>
+              <div class="input-wrap"><span class="prefix">💎</span><input type="number" id="chase-points" min="0" step="1000" value="80000" placeholder="80000"></div>
+            </div>
+            <div class="field">
+              <label for="chase-card">Holding Which Card?</label>
+              <select id="chase-card">
+                <option value="sapphire-reserve">Sapphire Reserve (1.5¢ portal)</option>
+                <option value="sapphire-preferred" selected>Sapphire Preferred (1.25¢ portal)</option>
+                <option value="ink-preferred">Ink Preferred (1.25¢ portal)</option>
+                <option value="freedom-only">Freedom cards only (1¢ cash)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="results" id="chase-results"></div>
+
+          <div class="transfer-section">
+            <h3>Top Transfer Partners (Chase → 1:1)</h3>
+            <table class="transfer-table" id="chase-transfers">
+              <thead><tr><th>Partner</th><th>Type</th><th>Ratio</th><th>Est. Value</th><th>Sweet Spot</th></tr></thead><tbody></tbody>
+            </table>
+          </div>
+
+          <div class="summary">
+            <h4>💡 Quick Take</h4>
+            <ul>
+              <li><strong>Portal baseline:</strong> 1.25¢ (Preferred/Ink) or 1.5¢ (Reserve) — guaranteed, no availability hunting.</li>
+              <li><strong>Transfer for:</strong> Hyatt (1.5-2.5¢), United saver (1.3-1.8¢), BA short-haul (1.5-2¢), Southwest (1.3-1.5¢).</li>
+              <li><strong>Avoid transferring for:</strong> Marriott (0.7¢), IHG (0.5-0.6¢), cash at 1¢.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- AMEX PANEL -->
+        <div class="tab-panel" id="panel-amex" role="tabpanel">
+          <div class="input-grid">
+            <div class="field">
+              <label for="amex-points">Amex MR Points Balance</label>
+              <div class="input-wrap"><span class="prefix">💎</span><input type="number" id="amex-points" min="0" step="1000" value="100000" placeholder="100000"></div>
+            </div>
+            <div class="field">
+              <label for="amex-card">Holding Which Card?</label>
+              <select id="amex-card">
+                <option value="plat" selected>Platinum / Business Platinum (1¢+ via Schwab/Morgan Stanley)</option>
+                <option value="gold">Gold / Green (1¢ cash, 0.6¢ travel)</option>
+                <option value="biz">Business Gold (1¢ cash)</option>
+                <option value="other">Other (1¢ cash)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="results" id="amex-results"></div>
+
+          <div class="transfer-section">
+            <h3>Top Transfer Partners (Amex → 1:1 unless noted)</h3>
+            <table class="transfer-table" id="amex-transfers">
+              <thead><tr><th>Partner</th><th>Type</th><th>Ratio</th><th>Est. Value</th><th>Sweet Spot</th></tr></thead><tbody></tbody>
+            </table>
+          </div>
+
+          <div class="summary">
+            <h4>💡 Quick Take</h4>
+            <ul>
+              <li><strong>Cash baseline:</strong> 0.6-1¢ depending on card. Schwab/Morgan Stanley Platinum = 1.25¢ cash.</li>
+              <li><strong>Transfer for:</strong> Delta flash sales (1.2-2¢), BA Reward Flight Saver (1.5-3¢), Marriott 5-night packages (1.2¢), Etihad Apartments (2¢+).</li>
+              <li><strong>Watch:</strong> Aeroplan (often 0.8-1¢), Hilton (0.5¢), Delta variable pricing.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- CAPITAL ONE PANEL -->
+        <div class="tab-panel" id="panel-capone" role="tabpanel">
+          <div class="input-grid">
+            <div class="field">
+              <label for="capone-points">Capital One Miles Balance</label>
+              <div class="input-wrap"><span class="prefix">💎</span><input type="number" id="capone-points" min="0" step="1000" value="80000" placeholder="80000"></div>
+            </div>
+            <div class="field">
+              <label for="capone-card">Holding Which Card?</label>
+              <select id="capone-card">
+                <option value="venture-x" selected>Venture X (1¢ cash, 1:1 transfers)</option>
+                <option value="venture">Venture / VentureOne (1¢ cash, 1:1 transfers)</option>
+                <option value="other">Other (1¢ cash, no transfers)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="results" id="capone-results"></div>
+
+          <div class="transfer-section">
+            <h3>Top Transfer Partners (Capital One → 1:1)</h3>
+            <table class="transfer-table" id="capone-transfers">
+              <thead><tr><th>Partner</th><th>Type</th><th>Ratio</th><th>Est. Value</th><th>Sweet Spot</th></tr></thead><tbody></tbody>
+            </table>
+          </div>
+
+          <div class="summary">
+            <h4>💡 Quick Take</h4>
+            <ul>
+              <li><strong>Cash baseline:</strong> 1¢ flat — simple, no card required.</li>
+              <li><strong>Transfer for:</strong> Avianca LifeMiles (1.3-1.8¢), BA Avios short-haul (1.5¢), Wyndham (1.1¢), Choice (1¢).</li>
+              <li><strong>Weakness:</strong> No Hyatt, no United, no Marriott. Partners lean budget/leisure.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- BILT PANEL -->
+        <div class="tab-panel" id="panel-bilt" role="tabpanel">
+          <div class="input-grid">
+            <div class="field">
+              <label for="bilt-points">Bilt Points Balance</label>
+              <div class="input-wrap"><span class="prefix">💎</span><input type="number" id="bilt-points" min="0" step="1000" value="50000" placeholder="50000"></div>
+            </div>
+            <div class="field">
+              <label for="bilt-status">Bilt Status</label>
+              <select id="bilt-status">
+                <option value="none" selected>No status (1:1 transfers)</option>
+                <option value="silver">Silver (1.1x rent day)</option>
+                <option value="gold">Gold (1.5x rent day + 1.25x transfers)</option>
+                <option value="platinum">Platinum (2x rent day + 1.5x transfers)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="results" id="bilt-results"></div>
+
+          <div class="transfer-section">
+            <h3>Top Transfer Partners (Bilt → 1:1, bonus with status)</h3>
+            <table class="transfer-table" id="bilt-transfers">
+              <thead><tr><th>Partner</th><th>Type</th><th>Ratio</th><th>Est. Value</th><th>Sweet Spot</th></tr></thead><tbody></tbody>
+            </table>
+          </div>
+
+          <div class="summary">
+            <h4>💡 Quick Take</h4>
+            <ul>
+              <li><strong>Earn:</strong> 1x rent (no fee), 2x travel, 3x dining. Rent Day = 2-4x.</li>
+              <li><strong>Transfer for:</strong> Hyatt (1.5-2.5¢), AA (1.2-1.8¢), United (1.3-1.8¢), Marriott (0.7¢).</li>
+              <li><strong>Unique:</strong> Only program earning on rent. Gold/Platinum status boosts transfer ratio.</li>
+            </ul>
+          </div>
+        </div>
+      </article>
+
+      <!-- AD SLOT -->
+      <div class="ad-slot">
+        <span class="ad-label">Advertisement</span>
+        <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="YOUR_SLOT_POINTS" data-ad-format="auto" data-full-width-responsive="true"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+      </div>
+
+      <article class="card">
+        <h2>How to Use This Calculator</h2>
+        <ol style="margin-left: 1.25rem; margin-bottom: 1rem;">
+          <li>Select your points currency (tab at top).</li>
+          <li>Enter your current balance and which card you hold (affects cash value).</li>
+          <li>Review the <strong>valuation cards</strong> — the green "Best" card shows your highest-value option.</li>
+          <li>Scan the <strong>transfer table</sub> for ⭐ sweet spots matching your travel goals.</li>
+        </ol>
+        <h3>Valuation Methodology</h3>
+        <ul style="margin-left: 1.25rem;">
+          <li><strong>Cash value:</strong> Based on card's portal rate (Chase) or statement credit rate (Amex/CapOne/Bilt).</li>
+          <li><strong>Transfer value:</strong> Based on Head for Points 2024 valuations + award availability data. Ranges reflect saver vs. peak.</li>
+          <li><strong>Sweet spots flagged:</strong> Partners where transfer value consistently exceeds cash value by 30%+.</li>
+          <li><strong>Updated:</strong> January 2024. Valuations change; verify before transferring.</li>
+        </ul>
+        <p><a href="/guides/chase-transfer-sweet-spots/">Chase sweet spots guide →</a> | <a href="/guides/amex-transfer-sweet-spots/">Amex sweet spots guide →</a></p>
+      </article>
+    </main>
+
+    <footer>
+      <p>&copy; 2024 [SITE NAME]. <a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a> · <a href="/contact/">Contact</a> · <a href="/disclaimer/">Advertiser Disclosure</a></p>
+      <p style="margin-top: 0.5rem;">This site uses Google AdSense. <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener">How Google uses data</a>.</p>
+    </footer>
+  </div>
+
+  <script>
+    (function() {
+      // Valuation data (cents per point)
+      const DATA = {
+        chase: {
+          cashRates: { 'sapphire-reserve': 1.5, 'sapphire-preferred': 1.25, 'ink-preferred': 1.25, 'freedom-only': 1.0 },
+          transfers: [
+            {partner: 'World of Hyatt', type: 'Hotel', ratio: '1:1', value: 1.8, sweet: true, cats: 'Hyatt'},
+            {partner: 'United MileagePlus', type: 'Airline', ratio: '1:1', value: 1.4, sweet: true, cats: 'United'},
+            {partner: 'British Airways Avios', type: 'Airline', ratio: '1:1', value: 1.5, sweet: true, cats: 'BA'},
+            {partner: 'Southwest Rapid Rewards', type: 'Airline', ratio: '1:1', value: 1.3, sweet: true, cats: 'WN'},
+            {partner: 'IHG One Rewards', type: 'Hotel', ratio: '1:1', value: 0.55, sweet: false, cats: 'IHG'},
+            {partner: 'Marriott Bonvoy', type: 'Hotel', ratio: '1:1', value: 0.7, sweet: false, cats: 'Marriott'},
+            {partner: 'Air France/KLM Flying Blue', type: 'Airline', ratio: '1:1', value: 1.2, sweet: false, cats: 'AF/KLM'},
+            {partner: 'Virgin Atlantic Flying Club', type: 'Airline', ratio: '1:1', value: 1.3, sweet: false, cats: 'VS'},
+            {partner: 'Singapore Airlines KrisFlyer', type: 'Airline', ratio: '1:1', value: 1.3, sweet: false, cats: 'SQ'},
+            {partner: 'Emirates Skywards', type: 'Airline', ratio: '1:1', value: 1.0, sweet: false, cats: 'EK'},
+            {partner: 'Aer Lingus AerClub', type: 'Airline', ratio: '1:1', value: 1.2, sweet: false, cats: 'EI'},
+            {partner: 'JetBlue TrueBlue', type: 'Airline', ratio: '1:1', value: 1.1, sweet: false, cats: 'B6'},
+          ]
+        },
+        amex: {
+          cashRates: { 'plat': 1.0, 'gold': 0.6, 'biz': 1.0, 'other': 1.0 }, // plat with Schwab = 1.25 but keep simple
+          transfers: [
+            {partner: 'Delta SkyMiles', type: 'Airline', ratio: '1:1', value: 1.2, sweet: false, cats: 'Delta'},
+            {partner: 'British Airways Avios', type: 'Airline', ratio: '1:1', value: 1.8, sweet: true, cats: 'BA RFS'},
+            {partner: 'Marriott Bonvoy', type: 'Hotel', ratio: '1:1', value: 0.7, sweet: false, cats: 'Marriott'},
+            {partner: 'Hilton Honors', type: 'Hotel', ratio: '1:2', value: 0.5, sweet: false, cats: 'Hilton'},
+            {partner: 'Aeroplan', type: 'Airline', ratio: '1:1', value: 1.0, sweet: false, cats: 'AC'},
+            {partner: 'Etihad Guest', type: 'Airline', ratio: '1:1', value: 2.0, sweet: true, cats: 'EY Apartments'},
+            {partner: 'Qantas Frequent Flyer', type: 'Airline', ratio: '1:1', value: 1.3, sweet: false, cats: 'QF'},
+            {partner: 'Singapore KrisFlyer', type: 'Airline', ratio: '1:1', value: 1.3, sweet: false, cats: 'SQ'},
+            {partner: 'Virgin Atlantic', type: 'Airline', ratio: '1:1', value: 1.3, sweet: false, cats: 'VS'},
+            {partner: 'Choice Privileges', type: 'Hotel', ratio: '1:1', value: 0.8, sweet: false, cats: 'Choice'},
+            {partner: 'Wyndham Rewards', type: 'Hotel', ratio: '1:1', value: 1.0, sweet: false, cats: 'Wyndham'},
+          ]
+        },
+        capone: {
+          cashRates: { 'venture-x': 1.0, 'venture': 1.0, 'other': 1.0 },
+          transfers: [
+            {partner: 'Avianca LifeMiles', type: 'Airline', ratio: '1:1', value: 1.5, sweet: true, cats: 'AV'},
+            {partner: 'British Airways Avios', type: 'Airline', ratio: '1:1', value: 1.5, sweet: true, cats: 'BA'},
+            {partner: 'Wyndham Rewards', type: 'Hotel', ratio: '1:1', value: 1.1, sweet: false, cats: 'Wyndham'},
+            {partner: 'Choice Privileges', type: 'Hotel', ratio: '1:1', value: 1.0, sweet: false, cats: 'Choice'},
+            {partner: 'Air France/KLM Flying Blue', type: 'Airline', ratio: '1:1', value: 1.2, sweet: false, cats: 'AF/KLM'},
+            {partner: 'Qatar Airways Privilege Club', type: 'Airline', ratio: '1:1', value: 1.3, sweet: false, cats: 'QR'},
+            {partner: 'Etihad Guest', type: 'Airline', ratio: '1:1', value: 1.5, sweet: false, cats: 'EY'},
+            {partner: 'Singapore KrisFlyer', type: 'Airline', ratio: '1:1', value: 1.3, sweet: false, cats: 'SQ'},
+            {partner: 'Emirates Skywards', type: 'Airline', ratio: '1:1', value: 1.0, sweet: false, cats: 'EK'},
+            {partner: 'ALL - Accor Live Limitless', type: 'Hotel', ratio: '1:1', value: 0.8, sweet: false, cats: 'Accor'},
+          ]
+        },
+        bilt: {
+          cashRates: { 'none': 1.0, 'silver': 1.0, 'gold': 1.0, 'platinum': 1.0 }, // cash value always 1¢
+          transferMult: { 'none': 1, 'silver': 1, 'gold': 1.25, 'platinum': 1.5 },
+          transfers: [
+            {partner: 'World of Hyatt', type: 'Hotel', ratio: '1:1', value: 1.8, sweet: true, cats: 'Hyatt'},
+            {partner: 'American Airlines AAdvantage', type: 'Airline', ratio: '1:1', value: 1.4, sweet: false, cats: 'AA'},
+            {partner: 'United MileagePlus', type: 'Airline', ratio: '1:1', value: 1.4, sweet: false, cats: 'United'},
+            {partner: 'British Airways Avios', type: 'Airline', ratio: '1:1', value: 1.5, sweet: true, cats: 'BA'},
+            {partner: 'Marriott Bonvoy', type: 'Hotel', ratio: '1:1', value: 0.7, sweet: false, cats: 'Marriott'},
+            {partner: 'Hilton Honors', type: 'Hotel', ratio: '1:2', value: 0.5, sweet: false, cats: 'Hilton'},
+            {partner: 'Air France/KLM Flying Blue', type: 'Airline', ratio: '1:1', value: 1.2, sweet: false, cats: 'AF/KLM'},
+            {partner: 'Virgin Atlantic Flying Club', type: 'Airline', ratio: '1:1', value: 1.3, sweet: false, cats: 'VS'},
+            {partner: 'Aeroplan', type: 'Airline', ratio: '1:1', value: 1.0, sweet: false, cats: 'AC'},
+            {partner: 'IHG One Rewards', type: 'Hotel', ratio: '1:1', value: 0.55, sweet: false, cats: 'IHG'},
+          ]
+        }
+      };
+
+      function fmtMoney(cents, points) { return '$' + (cents * points / 100).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0}); }
+      function fmtCents(c) { return c.toFixed(1) + '¢'; }
+
+      function renderPanel(currency) {
+        const data = DATA[currency];
+        const pointsInput = document.getElementById(`${currency}-points`);
+        const cardSelect = document.getElementById(`${currency}-card`);
+        const points = parseInt(pointsInput.value) || 0;
+        const cardKey = cardSelect.value;
+        const cashRate = data.cashRates[cardKey] || 1.0;
+        const mult = data.transferMult ? data.transferMult[document.getElementById(`${currency}-status`)?.value || 'none'] : 1;
+
+        // Valuation cards
+        const cashValue = cashRate * points / 100;
+        const transferOptions = data.transfers.map(t => ({
+          ...t,
+          effValue: t.value * mult,
+          totalValue: t.value * mult * points / 100
+        }));
+        const bestTransfer = transferOptions.reduce((best, t) => t.effValue > best.effValue ? t : best, transferOptions[0]);
+        const bestOverall = bestTransfer.effValue > cashRate ? 'transfer' : 'cash';
+
+        const resultsDiv = document.getElementById(`${currency}-results`);
+        resultsDiv.innerHTML = `
+          <div class="valuation-grid">
+            <div class="valuation-card ${bestOverall === 'cash' ? 'best' : ''}">
+              <div class="valuation-label">Cash / Portal</div>
+              <div class="valuation-value">${fmtCents(cashRate)}</div>
+              <div class="valuation-desc">${fmtMoney(cashRate, points)} total</div>
+            </div>
+            <div class="valuation-card ${bestOverall === 'transfer' ? 'best' : ''}">
+              <div class="valuation-label">Best Transfer</div>
+              <div class="valuation-value">${fmtCents(bestTransfer.effValue)}</div>
+              <div class="valuation-desc">${bestTransfer.partner} — ${fmtMoney(bestTransfer.effValue, points)} total</div>
+            </div>
+            <div class="valuation-card">
+              <div class="valuation-label">Conservative Transfer</div>
+              <div class="valuation-value">${fmtCents(Math.min(1.5, bestTransfer.effValue))}</div>
+              <div class="valuation-desc">Realistic saver availability</div>
+            </div>
+            <div class="valuation-card">
+              <div class="valuation-label">Worst Case</div>
+              <div class="valuation-value">${fmtCents(cashRate)}</div>
+              <div class="valuation-desc">Cash out if no award space</div>
+            </div>
+          </div>
+        `;
+
+        // Transfer table
+        const tbody = document.querySelector(`#${currency}-transfers tbody`);
+        tbody.innerHTML = transferOptions.map(t => `
+          <tr class="${t.sweet ? 'sweet' : ''}">
+            <td class="partner">${t.partner}</td>
+            <td class="category">${t.type.toLowerCase()}</td>
+            <td class="ratio">${t.ratio}${mult > 1 ? ` (×${mult})` : ''}</td>
+            <td class="value">${fmtCents(t.effValue)}</td>
+            <td>${t.sweet ? '⭐ Sweet spot' : '—'}</td>
+          </tr>
+        `).join('');
+      }
+
+      // Tab switching
+      document.querySelectorAll('.currency-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.currency-tab').forEach(t => {
+            t.classList.remove('active'); t.setAttribute('aria-selected', 'false');
+          });
+          document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+          tab.classList.add('active');
+          tab.setAttribute('aria-selected', 'true');
+          document.getElementById(`panel-${tab.dataset.tab}`).classList.add('active');
+        });
+      });
+
+      // Input listeners
+      ['chase','amex','capone','bilt'].forEach(c => {
+        document.getElementById(`${c}-points`).addEventListener('input', () => renderPanel(c));
+        document.getElementById(`${c}-card`).addEventListener('change', () => renderPanel(c));
+        const statusSel = document.getElementById(`${c}-status`);
+        if (statusSel) statusSel.addEventListener('change', () => renderPanel(c));
+      });
+
+      // Initial render
+      ['chase','amex','capone','bilt'].forEach(renderPanel);
+    })();
+  </script>
+</body>
+</html>

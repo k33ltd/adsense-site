@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Practical guides and tools for [YOUR NICHE] — clear answers, no fluff.">
+  <title>[PAGE TITLE] | [SITE NAME]</title>
+  <link rel="canonical" href="https://YOUR-DOMAIN.com/[PAGE-SLUG]/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg: #ffffff; --fg: #111827; --muted: #6b7280;
+      --accent: #2563eb; --accent-hover: #1d4ed8;
+      --border: #e5e7eb; --card: #f9fafb;
+      --max-w: 720px; --space: 1.5rem;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #0f172a; --fg: #f1f5f9; --muted: #94a3b8;
+        --accent: #3b82f6; --accent-hover: #60a5fa;
+        --border: #1e293b; --card: #111827; }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', system-ui, sans-serif; line-height: 1.7; color: var(--fg); background: var(--bg); }
+    .wrap { max-width: var(--max-w); margin: 0 auto; padding: 0 var(--space); }
+    header { padding: 3rem 0 2rem; border-bottom: 1px solid var(--border); text-align: center; }
+    h1 { font-size: clamp(1.75rem, 4vw, 2.5rem); font-weight: 700; line-height: 1.2; margin-bottom: 0.5rem; }
+    .tagline { color: var(--muted); font-size: 1.1rem; }
+    main { padding: 2rem 0; }
+    article { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 2rem; margin-bottom: 1.5rem; }
+    h2 { font-size: 1.5rem; font-weight: 600; margin: 1.5rem 0 0.75rem; color: var(--fg); }
+    h3 { font-size: 1.125rem; font-weight: 600; margin: 1.25rem 0 0.5rem; }
+    p { margin-bottom: 1rem; color: var(--fg); }
+    ul, ol { margin: 0.5rem 0 1rem 1.5rem; }
+    li { margin-bottom: 0.5rem; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { background: var(--border); padding: 0.125rem 0.375rem; border-radius: 4px; font-size: 0.9em; }
+    pre { background: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 8px; overflow-x: auto; margin: 1rem 0; }
+    pre code { background: none; padding: 0; }
+    .ad-slot { text-align: center; margin: 1.5rem 0; min-height: 90px; }
+    .ad-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; display: block; }
+    footer { padding: 2rem 0; border-top: 1px solid var(--border); text-align: center; color: var(--muted); font-size: 0.875rem; }
+    .nav { display: flex; justify-content: center; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
+    .nav a { padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 8px; font-weight: 500; font-size: 0.875rem; }
+    .nav a:hover { background: var(--card); }
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+    th, td { padding: 0.75rem; border-bottom: 1px solid var(--border); text-align: left; }
+    th { font-weight: 600; color: var(--fg); }
+    .toc { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.5rem; margin-bottom: 1.5rem; }
+    .toc summary { font-weight: 600; cursor: pointer; }
+    .toc ul { margin: 0.75rem 0 0 1.25rem; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>[PAGE TITLE]</h1>
+      <p class="tagline">[ONE-SENTENCE VALUE PROP — WHY THIS PAGE EXISTS]</p>
+    </header>
+
+    <nav class="nav" aria-label="Site navigation">
+      <a href="/">Home</a>
+      <a href="/guides/">Guides</a>
+      <a href="/tools/">Tools</a>
+      <a href="/about/">About</a>
+    </nav>
+
+    <main>
+      <article>
+        <div class="toc">
+          <summary>Table of Contents</summary>
+          <ul>
+            <li><a href="#intro">Introduction</a></li>
+            <li><a href="#core">Core Concept</a></li>
+            <li><a href="#steps">Step-by-Step</a></li>
+            <li><a href="#faq">FAQ</a></li>
+          </ul>
+        </div>
+
+        <section id="intro">
+          <h2>Introduction</h2>
+          <p>[HOOK: 2-3 sentences. What problem does this solve? Who is it for? What will they learn?]</p>
+          <p>[CREDIBILITY SIGNAL: "I've tested X methods / analyzed Y data / built Z projects..."]</p>
+        </section>
+
+        <!-- AD SLOT 1: After intro, before core content -->
+        <div class="ad-slot">
+          <span class="ad-label">Advertisement</span>
+          <ins class="adsbygoogle"
+               style="display:block"
+               data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+               data-ad-slot="YOUR_SLOT_1"
+               data-ad-format="auto"
+               data-full-width-responsive="true"></ins>
+          <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </div>
+
+        <section id="core">
+          <h2>Core Concept: [THE ONE THING TO UNDERSTAND]</h2>
+          <p>[EXPLAIN IT SIMPLY. Use analogies. No jargon without definition.]</p>
+          <p>[WHY IT MATTERS: Connect to reader's goal.]</p>
+        </section>
+
+        <section id="steps">
+          <h2>Step-by-Step: [ACHIEVE THE OUTCOME]</h2>
+          <ol>
+            <li><strong>[ACTION VERB] [WHAT TO DO]</strong> — [WHY/HOW. 1-2 sentences.]</li>
+            <li><strong>[ACTION VERB] [WHAT TO DO]</strong> — [WHY/HOW.]</li>
+            <li><strong>[ACTION VERB] [WHAT TO DO]</strong> — [WHY/HOW.]</li>
+            <li><strong>[ACTION VERB] [WHAT TO DO]</strong> — [WHY/HOW.]</li>
+            <li><strong>[ACTION VERB] [WHAT TO DO]</strong> — [WHY/HOW.]</li>
+          </ol>
+        </section>
+
+        <!-- AD SLOT 2: Mid-article, after steps -->
+        <div class="ad-slot">
+          <span class="ad-label">Advertisement</span>
+          <ins class="adsbygoogle"
+               style="display:block"
+               data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+               data-ad-slot="YOUR_SLOT_2"
+               data-ad-format="auto"
+               data-full-width-responsive="true"></ins>
+          <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </div>
+
+        <section>
+          <h2>Common Mistakes to Avoid</h2>
+          <ul>
+            <li><strong>[MISTAKE]</strong> — [WHY IT HURTS / BETTER ALTERNATIVE]</li>
+            <li><strong>[MISTAKE]</strong> — [WHY IT HURTS / BETTER ALTERNATIVE]</li>
+            <li><strong>[MISTAKE]</strong> — [WHY IT HURTS / BETTER ALTERNATIVE]</li>
+          </ul>
+        </section>
+
+        <section id="faq">
+          <h2>FAQ</h2>
+          <details>
+            <summary><strong>[QUESTION 1]</strong></summary>
+            <p>[CONCISE ANSWER. 2-4 sentences.]</p>
+          </details>
+          <details>
+            <summary><strong>[QUESTION 2]</strong></summary>
+            <p>[CONCISE ANSWER.]</p>
+          </details>
+          <details>
+            <summary><strong>[QUESTION 3]</strong></summary>
+            <p>[CONCISE ANSWER.]</p>
+          </details>
+        </section>
+
+        <!-- AD SLOT 3: Before footer -->
+        <div class="ad-slot">
+          <span class="ad-label">Advertisement</span>
+          <ins class="adsbygoogle"
+               style="display:block"
+               data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+               data-ad-slot="YOUR_SLOT_3"
+               data-ad-format="auto"
+               data-full-width-responsive="true"></ins>
+          <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </div>
+
+        <p style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.875rem;">
+          <strong>Last updated:</strong> [DATE] · <strong>Sources:</strong> [LINK TO PRIMARY SOURCES] · <a href="/contact/">Feedback?</a>
+        </p>
+      </article>
+
+      <!-- RELATED POSTS (internal linking) -->
+      <section style="margin-top: 2rem;">
+        <h2 style="margin-bottom: 1rem;">Related Guides</h2>
+        <div style="display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+          <a href="/guide-1/" style="display:block; padding:1.25rem; border:1px solid var(--border); border-radius:8px; background:var(--card); text-decoration:none;">
+            <strong style="font-size:1.05rem;">[RELATED GUIDE TITLE]</strong>
+            <p style="margin:0.5rem 0 0; color:var(--muted); font-size:0.9rem;">[ONE-LINE BENEFIT]</p>
+          </a>
+          <a href="/guide-2/" style="display:block; padding:1.25rem; border:1px solid var(--border); border-radius:8px; background:var(--card); text-decoration:none;">
+            <strong style="font-size:1.05rem;">[RELATED GUIDE TITLE]</strong>
+            <p style="margin:0.5rem 0 0; color:var(--muted); font-size:0.9rem;">[ONE-LINE BENEFIT]</p>
+          </a>
+          <a href="/guide-3/" style="display:block; padding:1.25rem; border:1px solid var(--border); border-radius:8px; background:var(--card); text-decoration:none;">
+            <strong style="font-size:1.05rem;">[RELATED GUIDE TITLE]</strong>
+            <p style="margin:0.5rem 0 0; color:var(--muted); font-size:0.9rem;">[ONE-LINE BENEFIT]</p>
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>&copy; [YEAR] [SITE NAME]. <a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a> · <a href="/contact/">Contact</a></p>
+      <p style="margin-top: 0.5rem;">This site uses Google AdSense. <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener">How Google uses data</a>.</p>
+    </footer>
+  </div>
+</body>
+</html>

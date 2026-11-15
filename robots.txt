@@ -1,0 +1,18 @@
+# robots.txt
+User-agent: *
+Allow: /
+
+# Disallow admin, search, and private paths
+Disallow: /admin/
+Disallow: /search/
+Disallow: /draft/
+Disallow: /api/
+Disallow: /*.json$
+Disallow: /*.xml$
+Disallow: /feed/
+
+# Sitemap location
+Sitemap: https://YOUR-DOMAIN.com/sitemap.xml
+
+# Crawl delay for polite bots (optional)
+Crawl-delay: 10
